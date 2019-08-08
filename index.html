@@ -1,0 +1,3876 @@
+<!--<!DOCTYPE html>-->
+<!--<html>-->
+
+<!--<head>-->
+    <!--<meta charset="utf-8">-->
+    <!--<title>芜湖市道路交通流量可视化模拟系统</title>-->
+    <!--<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">-->
+
+<!--</head>-->
+
+<!--<style>-->
+
+    <!--#main {-->
+        <!--position: absolute;-->
+    <!--}-->
+
+    <!--#dv {-->
+        <!--/*background-color: #000102;*/-->
+        <!--position: absolute;-->
+        <!--right: 15px;-->
+        <!--top: 20px;-->
+        <!--height: 800px;-->
+        <!--margin: 0;-->
+        <!--padding: 0;-->
+    <!--}-->
+
+    <!--#btn2 {-->
+        <!--width: 120px;-->
+        <!--height: 20px;-->
+        <!--margin-top: 20px;-->
+        <!--border: 1px solid #ff9412;-->
+    <!--}-->
+
+    <!--#route {-->
+        <!--color: #ff9412;-->
+        <!--right: 20px;-->
+    <!--}-->
+
+    <!--#dv1 {-->
+        <!--margin: 0;-->
+        <!--padding: 0;-->
+    <!--}-->
+
+    <!--#btn, #btn1, #btn3, #btn4, #btn5 {-->
+        <!--display: block;-->
+        <!--width: 120px;-->
+        <!--height: 30px;-->
+        <!--border: 1px solid #ff9412;-->
+        <!--margin: 20px auto 0;-->
+        <!--text-align: center;-->
+        <!--line-height: 30px;-->
+        <!--color: #ff9412;-->
+        <!--font-size: 12px;-->
+        <!--text-decoration: none;-->
+        <!--border-radius: 5px;-->
+    <!--}-->
+
+    <!--#btn6 {-->
+        <!--width: 120px;-->
+        <!--height: 30px;-->
+        <!--margin: 20px auto 0;-->
+        <!--text-align: center;-->
+    <!--}-->
+    <!--#btn7 {-->
+        <!--width: 120px;-->
+        <!--height: 30px;-->
+        <!--margin: 20px auto 0;-->
+        <!--text-align: center;-->
+    <!--}-->
+
+    <!--#btn:hover, #btn1:hover, #btn3:hover, #btn4:hover, #btn5:hover {-->
+        <!--color: #fff;-->
+        <!--background-color: #ff9412;-->
+    <!--}-->
+
+    <!--* {-->
+        <!--padding: 0;-->
+        <!--margin: 0;-->
+    <!--}-->
+
+    <!--&lt;!&ndash; /*调用百度地图api去掉地图左下角的百度logo*/-->
+    <!--&ndash;&gt;-->
+    <!--.BMap_cpyCtrl {-->
+        <!--display: none;-->
+    <!--}-->
+
+    <!--.anchorBL {-->
+        <!--display: none;-->
+    <!--}-->
+
+    <!--#bt {-->
+        <!--position: absolute;-->
+        <!--right: 15px;-->
+        <!--top: 8px;-->
+    <!--}-->
+
+    <!--::-webkit-scrollbar {-->
+        <!--display: none;-->
+    <!--}-->
+<!--</style>-->
+
+
+<!--<body>-->
+<!--&lt;!&ndash; 为ECharts准备一个具备大小（宽高）的Dom &ndash;&gt;-->
+<!--<div id="main" style="width: 1280px; height:800px;"></div>-->
+<!--&lt;!&ndash;1280*800&ndash;&gt;-->
+<!--<input type="button" value="隐藏" id="bt"/>-->
+<!--<div id="r-result"></div>-->
+<!--&lt;!&ndash;<div id="dv" style="width: 146px;height: 800px;">&ndash;&gt;-->
+<!--<div id="dv" style="width: 120px;height: 800px;">-->
+    <!--<input type="button" value="增加一条线路" id="btn" class="but">-->
+    <!--<input type="button" value="增加多条线路" id="btn1" class="but1">-->
+    <!--<button type="button" class="btn btn-info" id="btn7">交通流量图</button>-->
+    <!--&lt;!&ndash;<input type="text"  value="输入查询公交线路" id="btn2">&ndash;&gt;-->
+    <!--<input input type="search" placeholder="输入查询公交线路" id="btn2">-->
+    <!--<input type="button" value="查询" id="route">-->
+
+    <!--<div id="dv1">-->
+        <!--<input type="button" value="安徽师范大学" id="btn3">-->
+        <!--<input type="button" value="中山路步行街" id="btn4">-->
+        <!--<input type="button" value="赭山公园" id="btn5">-->
+
+        <!--<button type="button" class="btn btn-info" id="btn6">显示热力图</button>-->
+
+    <!--</div>-->
+
+
+<!--</div>-->
+<!--&lt;!&ndash;增加一辆车&ndash;&gt;-->
+<!--<script type="text/javascript">-->
+    <!--document.getElementById("btn").onclick = function () {-->
+        <!--var myChart = echarts.init(document.getElementById('main'));-->
+        <!--option = null;-->
+
+        <!--$.get('data/car1.json', function (data) {-->
+            <!--var hStep = 300 / (data.length - 1);-->
+            <!--var busLines = [].concat.apply([], data.map(function (busLine, idx) {-->
+                <!--var prevPt;-->
+                <!--var points = [];-->
+                <!--for (var i = 0; i < busLine.length; i += 2) {-->
+                    <!--var pt = [busLine[i], busLine[i + 1]];-->
+                    <!--if (i > 0) {-->
+                        <!--pt = [-->
+                            <!--prevPt[0] + pt[0],-->
+                            <!--prevPt[1] + pt[1]-->
+                        <!--];-->
+                    <!--}-->
+                    <!--prevPt = pt;-->
+
+                    <!--points.push([pt[0] / 1e4, pt[1] / 1e4]);-->
+                <!--}-->
+                <!--return {-->
+                    <!--coords: points,-->
+                    <!--lineStyle: {-->
+                        <!--normal: {-->
+                            <!--// color: echarts.color.modifyHSL('#5A94DF', Math.round(hStep * idx))-->
+                            <!--color: echarts.color.modifyHSL('#D014DF', Math.round(hStep * idx))-->
+                        <!--}-->
+                    <!--}, effect: {-->
+                        <!--symbolSize: 3  //1.5-->
+                    <!--},-->
+                <!--};-->
+            <!--}));-->
+            <!--busLines[0].effect.symbolSize = 10;-->
+            <!--myChart.setOption(option = {-->
+                <!--bmap: {-->
+                    <!--center: [118.416438, 31.357057],-->
+                    <!--zoom: 13,-->
+                    <!--roam: true,-->
+                    <!--mapStyle: {-->
+                        <!--'styleJson': [-->
+                            <!--{-->
+                                <!--'featureType': 'water',-->
+                                <!--'elementType': 'all',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#062244'       //'#031628'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'land',-->
+                                <!--'elementType': 'geometry',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#020222'         //'#000102'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'highway',-->
+                                <!--'elementType': 'all',-->
+                                <!--'stylers': {-->
+                                    <!--'visibility': 'off'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'arterial',-->
+                                <!--'elementType': 'geometry.fill',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#000000'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'arterial',-->
+                                <!--'elementType': 'geometry.stroke',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#0b3d51'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'local',-->
+                                <!--'elementType': 'geometry',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#000000'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'railway',-->
+                                <!--'elementType': 'geometry.fill',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#000000'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'railway',-->
+                                <!--'elementType': 'geometry.stroke',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#08304b'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'subway',-->
+                                <!--'elementType': 'geometry',-->
+                                <!--'stylers': {-->
+                                    <!--'lightness': -70-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'building',-->
+                                <!--'elementType': 'geometry.fill',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#000000'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'all',-->
+                                <!--'elementType': 'labels.text.fill',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#857f7f'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'all',-->
+                                <!--'elementType': 'labels.text.stroke',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#000000'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'building',-->
+                                <!--'elementType': 'geometry',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#022338'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'green',-->
+                                <!--'elementType': 'geometry',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#062032'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'boundary',-->
+                                <!--'elementType': 'all',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#465b6c'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'manmade',-->
+                                <!--'elementType': 'all',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#022338'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'label',-->
+                                <!--'elementType': 'all',-->
+                                <!--'stylers': {-->
+                                    <!--'visibility': 'off'-->
+                                <!--}-->
+                            <!--}-->
+                        <!--]-->
+                    <!--}-->
+                <!--},-->
+                <!--series: [{-->
+                    <!--type: 'lines',-->
+                    <!--coordinateSystem: 'bmap',-->
+                    <!--polyline: true,-->
+                    <!--data: busLines,-->
+                    <!--silent: true,-->
+                    <!--lineStyle: {-->
+                        <!--normal: {-->
+                            <!--// color: '#c23531',-->
+                            <!--// color: 'rgb(200, 35, 45)',-->
+                            <!--opacity: 0.2,-->
+                            <!--width: 1-->
+                        <!--}-->
+                    <!--},-->
+                    <!--progressiveThreshold: 500,-->
+                    <!--progressive: 200-->
+                <!--}, {-->
+                    <!--type: 'lines',-->
+                    <!--coordinateSystem: 'bmap',-->
+                    <!--polyline: true,-->
+                    <!--data: busLines,-->
+                    <!--lineStyle: {-->
+                        <!--normal: {-->
+                            <!--width: 0   //0-->
+                        <!--}-->
+                    <!--},-->
+                    <!--effect: {-->
+                        <!--constantSpeed: 20,-->
+                        <!--show: true,-->
+                        <!--trailLength: 0.1,-->
+                        <!--symbolSize: 3  //1.5-->
+                    <!--},-->
+                    <!--zlevel: 1-->
+                <!--}]-->
+            <!--});-->
+        <!--});-->
+
+        <!--if (option && typeof option === "object") {-->
+            <!--myChart.setOption(option, true);-->
+        <!--}-->
+<!--// 首先lines-bus.json是一个二维数组，里面每一个一维数组存储一辆公交车的轨迹，其中第一个和第二个元素为初始坐标（经纬度*10000），-->
+<!--// 往后每两个元素为一组表示经纬度的偏移量（*10000）。-->
+<!--//-->
+<!--// var busLines = [].concat.apply([], data.map(function (busLine, idx) {}))是将data数组映射到一个新的数组里，即将lines-bus.json转换为真实的经纬度坐标。-->
+<!--//-->
+<!--// var pt = [busLine[i], busLine[i + 1]];为起始点坐标。-->
+<!--//-->
+<!--// if (i > 0) {-->
+<!--//-->
+<!--//     pt = [prevPt[0] + pt[0], prevPt[1] + pt[1] ];-->
+<!--//-->
+<!--// }计算加上偏移量后的经纬度*10000-->
+<!--//-->
+<!--// prevPt = pt;将当前坐标赋值给上一个点坐标，继续循环；-->
+<!--//-->
+<!--// points.push([pt[0] / 1e4, pt[1] / 1e4]);坐标小数点前移四位得到真实的经纬度值，存储到points数组里。-->
+<!--//-->
+<!--//  return {-->
+<!--//-->
+<!--//      coords: points,-->
+<!--//-->
+<!--//      lineStyle: {-->
+<!--//-->
+<!--//          normal: {-->
+<!--//-->
+<!--//              color: echarts.color.modifyHSL('#5A94DF', Math.round(hStep * idx))-->
+<!--//-->
+<!--//          }-->
+<!--//-->
+<!--//      }-->
+<!--//-->
+<!--//  };为新数组的存储格式，新的数组每一个元素是一个对象。-->
+    <!--}-->
+<!--</script>-->
+<!--&lt;!&ndash;增加多辆车&ndash;&gt;-->
+<!--<script type="text/javascript">-->
+    <!--document.getElementById("btn1").onclick = function () {-->
+        <!--var myChart = echarts.init(document.getElementById('main'));-->
+        <!--option = null;-->
+        <!--$.get('data/car2.json', function (data) {-->
+            <!--var hStep = 300 / (data.length - 1);-->
+            <!--var busLines = [].concat.apply([], data.map(function (busLine, idx) {-->
+                <!--var prevPt;-->
+                <!--var points = [];-->
+                <!--for (var i = 0; i < busLine.length; i += 2) {-->
+                    <!--var pt = [busLine[i], busLine[i + 1]];-->
+                    <!--if (i > 0) {-->
+                        <!--pt = [-->
+                            <!--prevPt[0] + pt[0],-->
+                            <!--prevPt[1] + pt[1]-->
+                        <!--];-->
+                    <!--}-->
+                    <!--prevPt = pt;-->
+
+                    <!--points.push([pt[0] / 1e4, pt[1] / 1e4]);-->
+                <!--}-->
+                <!--return {-->
+                    <!--coords: points,-->
+                    <!--lineStyle: {-->
+                        <!--normal: {-->
+                            <!--color: echarts.color.modifyHSL('#5A94DF', Math.round(hStep * idx))-->
+                        <!--}-->
+                    <!--}-->
+                <!--};-->
+            <!--}));-->
+            <!--myChart.setOption(option = {-->
+                <!--bmap: {-->
+                    <!--center: [118.416438, 31.357057],-->
+                    <!--zoom: 13,-->
+                    <!--roam: true,-->
+                    <!--mapStyle: {-->
+                        <!--'styleJson': [-->
+                            <!--{-->
+                                <!--'featureType': 'water',-->
+                                <!--'elementType': 'all',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#062244'       //'#031628'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'land',-->
+                                <!--'elementType': 'geometry',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#020222'         //'#000102'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'highway',-->
+                                <!--'elementType': 'all',-->
+                                <!--'stylers': {-->
+                                    <!--'visibility': 'off'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'arterial',-->
+                                <!--'elementType': 'geometry.fill',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#000000'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'arterial',-->
+                                <!--'elementType': 'geometry.stroke',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#0b3d51'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'local',-->
+                                <!--'elementType': 'geometry',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#000000'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'railway',-->
+                                <!--'elementType': 'geometry.fill',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#000000'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'railway',-->
+                                <!--'elementType': 'geometry.stroke',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#08304b'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'subway',-->
+                                <!--'elementType': 'geometry',-->
+                                <!--'stylers': {-->
+                                    <!--'lightness': -70-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'building',-->
+                                <!--'elementType': 'geometry.fill',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#000000'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'all',-->
+                                <!--'elementType': 'labels.text.fill',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#857f7f'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'all',-->
+                                <!--'elementType': 'labels.text.stroke',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#000000'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'building',-->
+                                <!--'elementType': 'geometry',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#022338'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'green',-->
+                                <!--'elementType': 'geometry',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#062032'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'boundary',-->
+                                <!--'elementType': 'all',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#465b6c'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'manmade',-->
+                                <!--'elementType': 'all',-->
+                                <!--'stylers': {-->
+                                    <!--'color': '#022338'-->
+                                <!--}-->
+                            <!--},-->
+                            <!--{-->
+                                <!--'featureType': 'label',-->
+                                <!--'elementType': 'all',-->
+                                <!--'stylers': {-->
+                                    <!--'visibility': 'off'-->
+                                <!--}-->
+                            <!--}-->
+                        <!--]-->
+                    <!--}-->
+                <!--},-->
+                <!--series: [{-->
+                    <!--type: 'lines',-->
+                    <!--coordinateSystem: 'bmap',-->
+                    <!--polyline: true,-->
+                    <!--data: busLines,-->
+                    <!--silent: true,-->
+                    <!--lineStyle: {-->
+                        <!--normal: {-->
+                            <!--// color: '#c23531',-->
+                            <!--// color: 'rgb(200, 35, 45)',-->
+                            <!--opacity: 0.2,-->
+                            <!--width: 1-->
+                        <!--}-->
+                    <!--},-->
+                    <!--progressiveThreshold: 500,-->
+                    <!--progressive: 200-->
+                <!--}, {-->
+                    <!--type: 'lines',-->
+                    <!--coordinateSystem: 'bmap',-->
+                    <!--polyline: true,-->
+                    <!--data: busLines,-->
+                    <!--lineStyle: {-->
+                        <!--normal: {-->
+                            <!--width: 0   //0-->
+                        <!--}-->
+                    <!--},-->
+                    <!--effect: {-->
+                        <!--constantSpeed: 20,-->
+                        <!--show: true,-->
+                        <!--trailLength: 0.1,-->
+                        <!--symbolSize: 3   //1.5-->
+                    <!--},-->
+                    <!--zlevel: 1-->
+                <!--}]-->
+            <!--});-->
+        <!--});-->
+        <!--if (option && typeof option === "object") {-->
+            <!--myChart.setOption(option, true);-->
+        <!--}-->
+<!--// 首先lines-bus.json是一个二维数组，里面每一个一维数组存储一辆公交车的轨迹，其中第一个和第二个元素为初始坐标（经纬度*10000），-->
+<!--// 往后每两个元素为一组表示经纬度的偏移量（*10000）。-->
+<!--//-->
+<!--// var busLines = [].concat.apply([], data.map(function (busLine, idx) {}))是将data数组映射到一个新的数组里，即将lines-bus.json转换为真实的经纬度坐标。-->
+<!--//-->
+<!--// var pt = [busLine[i], busLine[i + 1]];为起始点坐标。-->
+<!--//-->
+<!--// if (i > 0) {-->
+<!--//-->
+<!--//     pt = [prevPt[0] + pt[0], prevPt[1] + pt[1] ];-->
+<!--//-->
+<!--// }计算加上偏移量后的经纬度*10000-->
+<!--//-->
+<!--// prevPt = pt;将当前坐标赋值给上一个点坐标，继续循环；-->
+<!--//-->
+<!--// points.push([pt[0] / 1e4, pt[1] / 1e4]);坐标小数点前移四位得到真实的经纬度值，存储到points数组里。-->
+<!--//-->
+<!--//  return {-->
+<!--//-->
+<!--//      coords: points,-->
+<!--//-->
+<!--//      lineStyle: {-->
+<!--//-->
+<!--//          normal: {-->
+<!--//-->
+<!--//              color: echarts.color.modifyHSL('#5A94DF', Math.round(hStep * idx))-->
+<!--//-->
+<!--//          }-->
+<!--//-->
+<!--//      }-->
+<!--//-->
+<!--//  };为新数组的存储格式，新的数组每一个元素是一个对象。-->
+    <!--}-->
+<!--</script>-->
+<!--&lt;!&ndash;查询交通路线图&ndash;&gt;-->
+<!--<script type="text/javascript">-->
+    <!--document.getElementById("route").onclick = function () {-->
+        <!--var v = document.getElementById("btn2").value;-->
+        <!--// 百度地图API功能-->
+        <!--var map = new BMap.Map("main");            // 创建Map实例-->
+        <!--// var mapStyle={style:"midnight"}-->
+        <!--// map.setMapStyle(mapStyle);-->
+        <!--var myStyleJson = [-->
+            <!--{-->
+                <!--'featureType': 'water',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#062244'       //'#031628'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'land',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#020222'         //'#000102'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'highway',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'visibility': 'off'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'arterial',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'arterial',-->
+                <!--'elementType': 'geometry.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#0b3d51'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'local',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'railway',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'railway',-->
+                <!--'elementType': 'geometry.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#08304b'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'subway',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'lightness': -70-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'building',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'all',-->
+                <!--'elementType': 'labels.text.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#857f7f'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'all',-->
+                <!--'elementType': 'labels.text.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'building',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#022338'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'green',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#062032'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'boundary',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#465b6c'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'manmade',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#022338'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'label',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'visibility': 'off'-->
+                <!--}-->
+            <!--}-->
+        <!--]-->
+        <!--map.setMapStyle({styleJson: myStyleJson});-->
+        <!--map.centerAndZoom(new BMap.Point(118.4170, 31.3802), 12);-->
+
+        <!--var busline = new BMap.BusLineSearch(map, {-->
+            <!--renderOptions: {map: map, panel: "r-result"},-->
+            <!--onGetBusListComplete: function (result) {-->
+                <!--if (result) {-->
+                    <!--var fstLine = result.getBusListItem(0);//获取第一个公交列表显示到map上-->
+                    <!--busline.getBusLine(fstLine);-->
+                <!--}-->
+            <!--}-->
+        <!--});-->
+
+        <!--function busSearch() {-->
+            <!--var busName = v;-->
+            <!--busline.getBusList(busName);-->
+        <!--}-->
+
+        <!--setTimeout(function () {-->
+            <!--busSearch();-->
+        <!--}, 1500);-->
+        <!--map.enableScrollWheelZoom();   //启用滚轮放大缩小，默认禁用-->
+        <!--map.enableContinuousZoom();    //启用地图惯性拖拽，默认禁用-->
+    <!--}-->
+
+<!--</script>-->
+<!--&lt;!&ndash;小车路线去师大&ndash;&gt;-->
+<!--<script type="text/javascript">-->
+    <!--document.getElementById("btn3").onclick = function () {-->
+        <!--// 百度地图API功能-->
+        <!--var map = new BMap.Map("main");-->
+        <!--var myStyleJson = [-->
+            <!--{-->
+                <!--'featureType': 'water',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#062244'       //'#031628'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'land',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#020222'         //'#000102'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'highway',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'visibility': 'off'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'arterial',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'arterial',-->
+                <!--'elementType': 'geometry.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#0b3d51'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'local',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'railway',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'railway',-->
+                <!--'elementType': 'geometry.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#08304b'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'subway',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'lightness': -70-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'building',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'all',-->
+                <!--'elementType': 'labels.text.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#857f7f'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'all',-->
+                <!--'elementType': 'labels.text.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'building',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#022338'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'green',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#062032'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'boundary',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#465b6c'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'manmade',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#022338'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'label',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'visibility': 'off'-->
+                <!--}-->
+            <!--}-->
+        <!--]-->
+        <!--map.setMapStyle({styleJson: myStyleJson});-->
+        <!--map.centerAndZoom(new BMap.Point(118.3718, 31.3380), 15);-->
+
+        <!--var myP1 = new BMap.Point(118.420835, 31.346784);    //起点-->
+        <!--var myP2 = new BMap.Point(118.381281, 31.339824);    //终点-->
+        <!--var myIcon = new BMap.Icon("img/公交车.png", new BMap.Size(32, 70), {    //小车图片-->
+            <!--//offset: new BMap.Size(0, -5),    //相当于CSS精灵-->
+            <!--imageOffset: new BMap.Size(0, 0)    //图片的偏移量。为了是图片底部中心对准坐标点。-->
+        <!--});-->
+        <!--var driving2 = new BMap.DrivingRoute(map, {renderOptions: {map: map, autoViewport: true}});    //驾车实例-->
+        <!--driving2.search(myP1, myP2);    //显示一条公交线路-->
+
+        <!--window.run = function () {-->
+            <!--var driving = new BMap.DrivingRoute(map);    //驾车实例-->
+            <!--driving.search(myP1, myP2);-->
+            <!--driving.setSearchCompleteCallback(function () {-->
+                <!--var pts = driving.getResults().getPlan(0).getRoute(0).getPath();    //通过驾车实例，获得一系列点的数组-->
+                <!--var paths = pts.length;    //获得有几个点-->
+
+                <!--var carMk = new BMap.Marker(pts[0], {icon: myIcon});-->
+                <!--map.addOverlay(carMk);-->
+                <!--i = 0;-->
+
+                <!--function resetMkPoint(i) {-->
+                    <!--carMk.setPosition(pts[i]);-->
+                    <!--if (i < paths) {-->
+                        <!--setTimeout(function () {-->
+                            <!--i++;-->
+                            <!--resetMkPoint(i);-->
+                        <!--}, 100);-->
+                    <!--}-->
+                <!--}-->
+
+                <!--setTimeout(function () {-->
+                    <!--resetMkPoint(5);-->
+                <!--}, 1000)-->
+
+            <!--});-->
+        <!--}-->
+
+        <!--setTimeout(function () {-->
+            <!--run();-->
+        <!--}, 1500);-->
+        <!--map.enableScrollWheelZoom();   //启用滚轮放大缩小，默认禁用-->
+        <!--map.enableContinuousZoom();    //启用地图惯性拖拽，默认禁用-->
+    <!--}-->
+
+<!--</script>-->
+<!--&lt;!&ndash;小车去步行街&ndash;&gt;-->
+<!--<script type="text/javascript">-->
+    <!--document.getElementById("btn4").onclick = function () {-->
+        <!--// 百度地图API功能-->
+        <!--var map = new BMap.Map("main");-->
+        <!--var myStyleJson = [-->
+            <!--{-->
+                <!--'featureType': 'water',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#062244'       //'#031628'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'land',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#020222'         //'#000102'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'highway',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'visibility': 'off'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'arterial',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'arterial',-->
+                <!--'elementType': 'geometry.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#0b3d51'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'local',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'railway',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'railway',-->
+                <!--'elementType': 'geometry.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#08304b'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'subway',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'lightness': -70-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'building',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'all',-->
+                <!--'elementType': 'labels.text.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#857f7f'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'all',-->
+                <!--'elementType': 'labels.text.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'building',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#022338'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'green',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#062032'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'boundary',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#465b6c'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'manmade',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#022338'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'label',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'visibility': 'off'-->
+                <!--}-->
+            <!--}-->
+        <!--]-->
+        <!--map.setMapStyle({styleJson: myStyleJson});-->
+        <!--map.centerAndZoom(new BMap.Point(118.3718, 31.3380), 15);-->
+
+        <!--var myP1 = new BMap.Point(118.420835, 31.346784);    //起点-->
+        <!--var myP2 = new BMap.Point(118.376096, 31.331921);    //终点-->
+        <!--var myIcon = new BMap.Icon("img/公交车.png", new BMap.Size(32, 70), {    //小车图片-->
+            <!--//offset: new BMap.Size(0, -5),    //相当于CSS精灵-->
+            <!--imageOffset: new BMap.Size(0, 0)    //图片的偏移量。为了是图片底部中心对准坐标点。-->
+        <!--});-->
+        <!--var driving2 = new BMap.DrivingRoute(map, {renderOptions: {map: map, autoViewport: true}});    //驾车实例-->
+        <!--driving2.search(myP1, myP2);    //显示一条公交线路-->
+
+        <!--window.run = function () {-->
+            <!--var driving = new BMap.DrivingRoute(map);    //驾车实例-->
+            <!--driving.search(myP1, myP2);-->
+            <!--driving.setSearchCompleteCallback(function () {-->
+                <!--var pts = driving.getResults().getPlan(0).getRoute(0).getPath();    //通过驾车实例，获得一系列点的数组-->
+                <!--var paths = pts.length;    //获得有几个点-->
+
+                <!--var carMk = new BMap.Marker(pts[0], {icon: myIcon});-->
+                <!--map.addOverlay(carMk);-->
+                <!--i = 0;-->
+
+                <!--function resetMkPoint(i) {-->
+                    <!--carMk.setPosition(pts[i]);-->
+                    <!--if (i < paths) {-->
+                        <!--setTimeout(function () {-->
+                            <!--i++;-->
+                            <!--resetMkPoint(i);-->
+                        <!--}, 100);-->
+                    <!--}-->
+                <!--}-->
+
+                <!--setTimeout(function () {-->
+                    <!--resetMkPoint(5);-->
+                <!--}, 1000)-->
+
+            <!--});-->
+        <!--}-->
+
+        <!--setTimeout(function () {-->
+            <!--run();-->
+        <!--}, 1500);-->
+        <!--map.enableScrollWheelZoom();   //启用滚轮放大缩小，默认禁用-->
+        <!--map.enableContinuousZoom();    //启用地图惯性拖拽，默认禁用-->
+    <!--}-->
+
+<!--</script>-->
+<!--&lt;!&ndash;小车去公园&ndash;&gt;-->
+<!--<script type="text/javascript">-->
+    <!--document.getElementById("btn5").onclick = function () {-->
+        <!--// 百度地图API功能-->
+        <!--var map = new BMap.Map("main");-->
+        <!--var myStyleJson = [-->
+            <!--{-->
+                <!--'featureType': 'water',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#062244'       //'#031628'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'land',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#020222'         //'#000102'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'highway',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'visibility': 'off'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'arterial',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'arterial',-->
+                <!--'elementType': 'geometry.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#0b3d51'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'local',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'railway',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'railway',-->
+                <!--'elementType': 'geometry.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#08304b'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'subway',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'lightness': -70-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'building',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'all',-->
+                <!--'elementType': 'labels.text.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#857f7f'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'all',-->
+                <!--'elementType': 'labels.text.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'building',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#022338'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'green',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#062032'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'boundary',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#465b6c'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'manmade',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#022338'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'label',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'visibility': 'off'-->
+                <!--}-->
+            <!--}-->
+        <!--]-->
+        <!--map.setMapStyle({styleJson: myStyleJson});-->
+        <!--map.centerAndZoom(new BMap.Point(118.3718, 31.3380), 15);-->
+
+        <!--var myP1 = new BMap.Point(118.420835, 31.346784);    //起点-->
+        <!--var myP2 = new BMap.Point(118.383547, 31.34884);    //终点-->
+        <!--var myIcon = new BMap.Icon("img/公交车.png", new BMap.Size(32, 70), {    //小车图片-->
+            <!--//offset: new BMap.Size(0, -5),    //相当于CSS精灵-->
+            <!--imageOffset: new BMap.Size(0, 0)    //图片的偏移量。为了是图片底部中心对准坐标点。-->
+        <!--});-->
+        <!--var driving2 = new BMap.DrivingRoute(map, {renderOptions: {map: map, autoViewport: true}});    //驾车实例-->
+        <!--driving2.search(myP1, myP2);    //显示一条公交线路-->
+
+        <!--window.run = function () {-->
+            <!--var driving = new BMap.DrivingRoute(map);    //驾车实例-->
+            <!--driving.search(myP1, myP2);-->
+            <!--driving.setSearchCompleteCallback(function () {-->
+                <!--var pts = driving.getResults().getPlan(0).getRoute(0).getPath();    //通过驾车实例，获得一系列点的数组-->
+                <!--var paths = pts.length;    //获得有几个点-->
+
+                <!--var carMk = new BMap.Marker(pts[0], {icon: myIcon});-->
+                <!--map.addOverlay(carMk);-->
+                <!--i = 0;-->
+
+                <!--function resetMkPoint(i) {-->
+                    <!--carMk.setPosition(pts[i]);-->
+                    <!--if (i < paths) {-->
+                        <!--setTimeout(function () {-->
+                            <!--i++;-->
+                            <!--resetMkPoint(i);-->
+                        <!--}, 100);-->
+                    <!--}-->
+                <!--}-->
+
+                <!--setTimeout(function () {-->
+                    <!--resetMkPoint(5);-->
+                <!--}, 1000)-->
+
+            <!--});-->
+        <!--}-->
+
+        <!--setTimeout(function () {-->
+            <!--run();-->
+        <!--}, 1500);-->
+        <!--map.enableScrollWheelZoom();   //启用滚轮放大缩小，默认禁用-->
+        <!--map.enableContinuousZoom();    //启用地图惯性拖拽，默认禁用-->
+    <!--}-->
+
+<!--</script>-->
+<!--&lt;!&ndash;显示热力图&ndash;&gt;-->
+<!--<script type="text/javascript">-->
+    <!--document.getElementById("btn6").onclick = function () {-->
+
+        <!--var map = new BMap.Map("main");       // 创建地图实例-->
+        <!--var myStyleJson = [-->
+            <!--{-->
+                <!--'featureType': 'water',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#062244'       //'#031628'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'land',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#020222'         //'#000102'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'highway',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'visibility': 'off'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'arterial',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'arterial',-->
+                <!--'elementType': 'geometry.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#0b3d51'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'local',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'railway',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'railway',-->
+                <!--'elementType': 'geometry.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#08304b'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'subway',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'lightness': -70-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'building',-->
+                <!--'elementType': 'geometry.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'all',-->
+                <!--'elementType': 'labels.text.fill',-->
+                <!--'stylers': {-->
+                    <!--'color': '#857f7f'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'all',-->
+                <!--'elementType': 'labels.text.stroke',-->
+                <!--'stylers': {-->
+                    <!--'color': '#000000'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'building',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#022338'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'green',-->
+                <!--'elementType': 'geometry',-->
+                <!--'stylers': {-->
+                    <!--'color': '#062032'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'boundary',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#465b6c'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'manmade',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'color': '#022338'-->
+                <!--}-->
+            <!--},-->
+            <!--{-->
+                <!--'featureType': 'label',-->
+                <!--'elementType': 'all',-->
+                <!--'stylers': {-->
+                    <!--'visibility': 'off'-->
+                <!--}-->
+            <!--}-->
+        <!--]-->
+        <!--map.setMapStyle({styleJson: myStyleJson});-->
+        <!--var point = new BMap.Point(118.424257, 31.336101);-->
+        <!--map.centerAndZoom(point, 13);             // 初始化地图，设置中心点坐标和地图级别-->
+        <!--map.enableScrollWheelZoom(); // 允许滚轮缩放-->
+
+        <!--var points = [{"lng": 118.409803, "lat": 31.404671, "count": 100},-->
+            <!--{"lng": 118.409623, "lat": 31.404301, "count": 98},-->
+            <!--{"lng": 118.3407, "lat": 31.3947, "count": 34},-->
+            <!--{"lng": 118.383547, "lat": 31.34884, "count": 98},-->
+            <!--{"lng": 118.476528, "lat": 31.34794, "count": 100},-->
+            <!--{"lng": 118.398692, "lat": 31.354271, "count": 100},-->
+            <!--{"lng": 118.475305, "lat": 31.36448, "count": 100},-->
+            <!--{"lng": 118.4326, "lat": 31.3793, "count": 6},-->
+            <!--{"lng": 118.3502, "lat": 31.2677, "count": 19},-->
+            <!--{"lng": 118.4720, "lat": 31.3384, "count": 66},-->
+            <!--{"lng": 118.3664, "lat": 31.3702, "count": 98},-->
+            <!--{"lng": 118.4760, "lat": 31.3277, "count": 18},-->
+            <!--{"lng": 118.4103, "lat": 31.2596, "count": 18},-->
+            <!--{"lng": 118.4187, "lat": 31.3040, "count": 90},-->
+            <!--{"lng": 118.4607, "lat": 31.3541, "count": 11},-->
+            <!--{"lng": 118.4502, "lat": 31.2838, "count": 98},-->
+            <!--{"lng": 118.4574, "lat": 31.2815, "count": 50},-->
+            <!--{"lng": 118.4686, "lat": 31.3135, "count": 71},-->
+            <!--{"lng": 118.4015, "lat": 31.2991, "count": 7},-->
+            <!--{"lng": 118.4955, "lat": 31.3003, "count": 13},-->
+            <!--{"lng": 118.3825, "lat": 31.4097, "count": 83},-->
+            <!--{"lng": 118.3412, "lat": 31.3615, "count": 3},-->
+            <!--{"lng": 118.4012, "lat": 31.3813, "count": 53},-->
+            <!--{"lng": 118.4843, "lat": 31.2790, "count": 58},-->
+            <!--{"lng": 118.4191, "lat": 31.2750, "count": 14},-->
+            <!--{"lng": 118.4594, "lat": 31.3579, "count": 28},-->
+            <!--{"lng": 118.4550, "lat": 31.3420, "count": 90},-->
+            <!--{"lng": 118.4619, "lat": 31.2791, "count": 97},-->
+            <!--{"lng": 118.4392, "lat": 31.3493, "count": 99},-->
+            <!--{"lng": 118.3946, "lat": 31.3135, "count": 21},-->
+            <!--{"lng": 118.3498, "lat": 31.2525, "count": 27},-->
+            <!--{"lng": 118.3839, "lat": 31.3023, "count": 47},-->
+            <!--{"lng": 118.4531, "lat": 31.2719, "count": 65},-->
+            <!--{"lng": 118.4830, "lat": 31.2976, "count": 54},-->
+            <!--{"lng": 118.3814, "lat": 31.3084, "count": 40},-->
+            <!--{"lng": 118.4043, "lat": 31.4011, "count": 88},-->
+            <!--{"lng": 118.4772, "lat": 31.3052, "count": 92},-->
+            <!--{"lng": 118.4117, "lat": 31.4029, "count": 87},-->
+            <!--{"lng": 118.4403, "lat": 31.3311, "count": 71},-->
+            <!--{"lng": 118.4797, "lat": 31.3549, "count": 79},-->
+            <!--{"lng": 118.3814, "lat": 31.3231, "count": 99},-->
+            <!--{"lng": 118.4406, "lat": 31.3055, "count": 41},-->
+            <!--{"lng": 118.3539, "lat": 31.3452, "count": 56},-->
+            <!--{"lng": 118.3683, "lat": 31.3051, "count": 82},-->
+            <!--{"lng": 118.4803, "lat": 31.2597, "count": 69},-->
+            <!--{"lng": 118.4846, "lat": 31.3940, "count": 46},-->
+            <!--{"lng": 118.5005, "lat": 31.2700, "count": 94},-->
+            <!--{"lng": 118.4565, "lat": 31.3005, "count": 40},-->
+            <!--{"lng": 118.4895, "lat": 31.2830, "count": 45},-->
+            <!--{"lng": 118.3620, "lat": 31.3385, "count": 95},-->
+            <!--{"lng": 118.3752, "lat": 31.3885, "count": 43},-->
+            <!--{"lng": 118.4337, "lat": 31.2789, "count": 3},-->
+            <!--{"lng": 118.4025, "lat": 31.2759, "count": 77},-->
+            <!--{"lng": 118.4491, "lat": 31.3649, "count": 86},-->
+            <!--{"lng": 118.4404, "lat": 31.3950, "count": 60},-->
+            <!--{"lng": 118.4546, "lat": 31.2845, "count": 49},-->
+            <!--{"lng": 118.4852, "lat": 31.3430, "count": 75},-->
+            <!--{"lng": 118.3441, "lat": 31.3768, "count": 41},-->
+            <!--{"lng": 118.4984, "lat": 31.4019, "count": 36},-->
+            <!--{"lng": 118.3705, "lat": 31.3523, "count": 9},-->
+            <!--{"lng": 118.4942, "lat": 31.3482, "count": 43},-->
+            <!--{"lng": 118.3703, "lat": 31.3925, "count": 52},-->
+            <!--{"lng": 118.4922, "lat": 31.4087, "count": 57},-->
+            <!--{"lng": 118.4349, "lat": 31.4073, "count": 74},-->
+            <!--{"lng": 118.4630, "lat": 31.3873, "count": 63},-->
+            <!--{"lng": 118.4269, "lat": 31.3614, "count": 99},-->
+            <!--{"lng": 118.4435, "lat": 31.2811, "count": 31},-->
+            <!--{"lng": 118.4677, "lat": 31.4176, "count": 12},-->
+            <!--{"lng": 118.3879, "lat": 31.4024, "count": 89},-->
+            <!--{"lng": 118.3570, "lat": 31.2889, "count": 52},-->
+            <!--{"lng": 118.4867, "lat": 31.3536, "count": 44},-->
+            <!--{"lng": 118.4483, "lat": 31.3053, "count": 50},-->
+            <!--{"lng": 118.4387, "lat": 31.2593, "count": 45},-->
+            <!--{"lng": 118.3853, "lat": 31.2891, "count": 94},-->
+            <!--{"lng": 118.3661, "lat": 31.3553, "count": 96},-->
+            <!--{"lng": 118.3464, "lat": 31.2878, "count": 35},-->
+            <!--{"lng": 118.4609, "lat": 31.4095, "count": 43},-->
+            <!--{"lng": 118.3778, "lat": 31.3567, "count": 95},-->
+            <!--{"lng": 118.4965, "lat": 31.2637, "count": 46},-->
+            <!--{"lng": 118.4144, "lat": 31.4077, "count": 49},-->
+            <!--{"lng": 118.3644, "lat": 31.3960, "count": 36},-->
+            <!--{"lng": 118.4512, "lat": 31.3379, "count": 42},-->
+            <!--{"lng": 118.4551, "lat": 31.2937, "count": 62},-->
+            <!--{"lng": 118.4553, "lat": 31.2520, "count": 59},-->
+            <!--{"lng": 118.4167, "lat": 31.3821, "count": 52},-->
+            <!--{"lng": 118.4075, "lat": 31.2601, "count": 57},-->
+            <!--{"lng": 118.3507, "lat": 31.3664, "count": 26},-->
+            <!--{"lng": 118.4814, "lat": 31.2590, "count": 86},-->
+            <!--{"lng": 118.4806, "lat": 31.2656, "count": 43},-->
+            <!--{"lng": 118.3610, "lat": 31.3259, "count": 62},-->
+            <!--{"lng": 118.4112, "lat": 31.4188, "count": 69},-->
+            <!--{"lng": 118.4480, "lat": 31.2747, "count": 76},-->
+            <!--{"lng": 118.4669, "lat": 31.2647, "count": 24},-->
+            <!--{"lng": 118.3984, "lat": 31.3535, "count": 27},-->
+            <!--{"lng": 118.4855, "lat": 31.3194, "count": 80},-->
+            <!--{"lng": 118.3577, "lat": 31.3350, "count": 18},-->
+            <!--{"lng": 118.3660, "lat": 31.4167, "count": 58},-->
+            <!--{"lng": 118.4178, "lat": 31.2585, "count": 76},-->
+            <!--{"lng": 118.4928, "lat": 31.2910, "count": 94},-->
+            <!--{"lng": 118.3691, "lat": 31.2873, "count": 10},-->
+            <!--{"lng": 118.4493, "lat": 31.3761, "count": 92},-->
+            <!--{"lng": 118.4373, "lat": 31.2614, "count": 18},-->
+            <!--{"lng": 118.3819, "lat": 31.2773, "count": 63},-->
+            <!--{"lng": 118.3597, "lat": 31.2883, "count": 47},-->
+            <!--{"lng": 118.4023, "lat": 31.3771, "count": 68},-->
+            <!--{"lng": 118.3741, "lat": 31.2862, "count": 95},-->
+            <!--{"lng": 118.3671, "lat": 31.3962, "count": 18},-->
+            <!--{"lng": 118.3815, "lat": 31.2868, "count": 71},-->
+            <!--{"lng": 118.3402, "lat": 31.2969, "count": 8},-->
+            <!--{"lng": 118.3795, "lat": 31.4129, "count": 96},-->
+            <!--{"lng": 118.4564, "lat": 31.2837, "count": 26},-->
+            <!--{"lng": 118.3879, "lat": 31.2942, "count": 76},-->
+            <!--{"lng": 118.4419, "lat": 31.2927, "count": 96},-->
+            <!--{"lng": 118.4123, "lat": 31.3385, "count": 64},-->
+            <!--{"lng": 118.4633, "lat": 31.4144, "count": 66},-->
+            <!--{"lng": 118.4944, "lat": 31.2859, "count": 36},-->
+            <!--{"lng": 118.3852, "lat": 31.2935, "count": 72},-->
+            <!--{"lng": 118.4376, "lat": 31.3895, "count": 99},-->
+            <!--{"lng": 118.4791, "lat": 31.3023, "count": 53},-->
+            <!--{"lng": 118.3808, "lat": 31.2627, "count": 64},-->
+            <!--{"lng": 118.3484, "lat": 31.3002, "count": 35},-->
+            <!--{"lng": 118.3942, "lat": 31.3936, "count": 29},-->
+            <!--{"lng": 118.4630, "lat": 31.2656, "count": 47},-->
+            <!--{"lng": 118.4499, "lat": 31.3432, "count": 40},-->
+            <!--{"lng": 118.3842, "lat": 31.3007, "count": 80},-->
+            <!--{"lng": 118.3640, "lat": 31.2765, "count": 24},-->
+            <!--{"lng": 118.5024, "lat": 31.3166, "count": 5},-->
+            <!--{"lng": 118.4573, "lat": 31.3146, "count": 26},-->
+            <!--{"lng": 118.4074, "lat": 31.4125, "count": 8},-->
+            <!--{"lng": 118.4989, "lat": 31.3340, "count": 36},-->
+            <!--{"lng": 118.3628, "lat": 31.3443, "count": 38},-->
+            <!--{"lng": 118.3466, "lat": 31.3308, "count": 98},-->
+            <!--{"lng": 118.3628, "lat": 31.3174, "count": 26},-->
+            <!--{"lng": 118.4968, "lat": 31.3971, "count": 74},-->
+            <!--{"lng": 118.4607, "lat": 31.2588, "count": 52},-->
+            <!--{"lng": 118.4026, "lat": 31.3496, "count": 24},-->
+            <!--{"lng": 118.4417, "lat": 31.2515, "count": 36},-->
+            <!--{"lng": 118.3665, "lat": 31.3022, "count": 32},-->
+            <!--{"lng": 118.4216, "lat": 31.3059, "count": 28},-->
+            <!--{"lng": 118.3873, "lat": 31.2622, "count": 97},-->
+            <!--{"lng": 118.3496, "lat": 31.2882, "count": 91},-->
+            <!--{"lng": 118.3831, "lat": 31.3702, "count": 50},-->
+            <!--{"lng": 118.3790, "lat": 31.3611, "count": 70},-->
+            <!--{"lng": 118.4323, "lat": 31.4177, "count": 93},-->
+            <!--{"lng": 118.3563, "lat": 31.2666, "count": 16},-->
+            <!--{"lng": 118.3404, "lat": 31.2655, "count": 72},-->
+            <!--{"lng": 118.4955, "lat": 31.3256, "count": 6},-->
+            <!--{"lng": 118.3870, "lat": 31.4171, "count": 50},-->
+            <!--{"lng": 118.4468, "lat": 31.4124, "count": 91},-->
+            <!--{"lng": 118.4338, "lat": 31.3671, "count": 9},-->
+            <!--{"lng": 118.4101, "lat": 31.4009, "count": 18},-->
+            <!--{"lng": 118.4254, "lat": 31.3536, "count": 4},-->
+            <!--{"lng": 118.3568, "lat": 31.3812, "count": 33},-->
+            <!--{"lng": 118.4741, "lat": 31.3521, "count": 45},-->
+            <!--{"lng": 118.4742, "lat": 31.4189, "count": 10},-->
+            <!--{"lng": 118.3634, "lat": 31.2833, "count": 97},-->
+            <!--{"lng": 118.4037, "lat": 31.3151, "count": 54},-->
+            <!--{"lng": 118.4902, "lat": 31.3203, "count": 99},-->
+            <!--{"lng": 118.4051, "lat": 31.3331, "count": 35},-->
+            <!--{"lng": 118.5006, "lat": 31.3674, "count": 59},-->
+            <!--{"lng": 118.3828, "lat": 31.3826, "count": 27},-->
+            <!--{"lng": 118.4396, "lat": 31.4110, "count": 32},-->
+            <!--{"lng": 118.3434, "lat": 31.3907, "count": 67},-->
+            <!--{"lng": 118.4558, "lat": 31.3153, "count": 26},-->
+            <!--{"lng": 118.4680, "lat": 31.2956, "count": 80},-->
+            <!--{"lng": 118.3977, "lat": 31.2813, "count": 46},-->
+            <!--{"lng": 118.3460, "lat": 31.4159, "count": 28},-->
+            <!--{"lng": 118.4276, "lat": 31.3440, "count": 72},-->
+            <!--{"lng": 118.4107, "lat": 31.2973, "count": 24},-->
+            <!--{"lng": 118.3502, "lat": 31.2559, "count": 44},-->
+            <!--{"lng": 118.4226, "lat": 31.3141, "count": 64},-->
+            <!--{"lng": 118.4983, "lat": 31.2831, "count": 42},-->
+            <!--{"lng": 118.3713, "lat": 31.3279, "count": 24},-->
+            <!--{"lng": 118.3585, "lat": 31.3806, "count": 11},-->
+            <!--{"lng": 118.3654, "lat": 31.3980, "count": 12},-->
+            <!--{"lng": 118.4437, "lat": 31.4015, "count": 26},-->
+            <!--{"lng": 118.3718, "lat": 31.4205, "count": 15},-->
+            <!--{"lng": 118.4537, "lat": 31.2819, "count": 20},-->
+            <!--{"lng": 118.4975, "lat": 31.3825, "count": 84},-->
+            <!--{"lng": 118.3455, "lat": 31.3593, "count": 66},-->
+            <!--{"lng": 118.3958, "lat": 31.2949, "count": 84},-->
+            <!--{"lng": 118.3623, "lat": 31.4023, "count": 83},-->
+            <!--{"lng": 118.3544, "lat": 31.4043, "count": 78},-->
+            <!--{"lng": 118.4614, "lat": 31.2859, "count": 59},-->
+            <!--{"lng": 118.4260, "lat": 31.3396, "count": 33},-->
+            <!--{"lng": 118.4625, "lat": 31.2820, "count": 92},-->
+            <!--{"lng": 118.3472, "lat": 31.2837, "count": 74},-->
+            <!--{"lng": 118.3745, "lat": 31.2618, "count": 89},-->
+            <!--{"lng": 118.4764, "lat": 31.3355, "count": 2},-->
+            <!--{"lng": 118.4195, "lat": 31.2544, "count": 24},-->
+            <!--{"lng": 118.4681, "lat": 31.3758, "count": 89},-->
+            <!--{"lng": 118.3953, "lat": 31.2765, "count": 45},-->
+            <!--{"lng": 118.4078, "lat": 31.3776, "count": 28},-->
+            <!--{"lng": 118.5003, "lat": 31.3092, "count": 39},-->
+            <!--{"lng": 118.3452, "lat": 31.2546, "count": 64},-->
+            <!--{"lng": 118.3797, "lat": 31.2637, "count": 73},-->
+            <!--{"lng": 118.3516, "lat": 31.3829, "count": 71},-->
+            <!--{"lng": 118.4225, "lat": 31.3855, "count": 60},-->
+            <!--{"lng": 118.4240, "lat": 31.2706, "count": 67},-->
+            <!--{"lng": 118.4510, "lat": 31.3316, "count": 18},-->
+            <!--{"lng": 118.4957, "lat": 31.2612, "count": 74},-->
+            <!--{"lng": 118.4934, "lat": 31.2590, "count": 13},-->
+            <!--{"lng": 118.4207, "lat": 31.3698, "count": 34},-->
+            <!--{"lng": 118.4263, "lat": 31.4096, "count": 60},-->
+            <!--{"lng": 118.3526, "lat": 31.3576, "count": 10}-->
+
+        <!--];-->
+        <!--if (!isSupportCanvas()) {-->
+            <!--alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~')-->
+        <!--}-->
+        <!--//详细的参数,可以查看heatmap.js的文档 https://github.com/pa7/heatmap.js/blob/master/README.md-->
+        <!--//参数说明如下:-->
+        <!--/* visible 热力图是否显示,默认为true-->
+         <!--* opacity 热力的透明度,1-100-->
+         <!--* radius 势力图的每个点的半径大小-->
+         <!--* gradient  {JSON} 热力图的渐变区间 . gradient如下所示-->
+         <!--*	{-->
+                <!--.2:'rgb(0, 255, 255)',-->
+                <!--.5:'rgb(0, 110, 255)',-->
+                <!--.8:'rgb(100, 0, 255)'-->
+            <!--}-->
+            <!--其中 key 表示插值的位置, 0~1.-->
+                <!--value 为颜色值.-->
+         <!--*/-->
+        <!--heatmapOverlay = new BMapLib.HeatmapOverlay({"radius": 20});-->
+        <!--map.addOverlay(heatmapOverlay);-->
+        <!--heatmapOverlay.setDataSet({data: points, max: 100});-->
+        <!--//是否显示热力图-->
+        <!--// function openHeatmap(){-->
+        <!--//     heatmapOverlay.show();-->
+        <!--// }-->
+        <!--// function closeHeatmap(){-->
+        <!--//     heatmapOverlay.hide();-->
+        <!--// }-->
+        <!--// closeHeatmap();-->
+        <!--function setGradient() {-->
+            <!--/*格式如下所示:-->
+           <!--{-->
+                 <!--0:'rgb(102, 255, 0)',-->
+                 <!--.5:'rgb(255, 170, 0)',-->
+                 <!--1:'rgb(255, 0, 0)'-->
+           <!--}*/-->
+            <!--var gradient = {};-->
+            <!--var colors = document.querySelectorAll("input[type='color']");-->
+            <!--colors = [].slice.call(colors, 0);-->
+            <!--colors.forEach(function (ele) {-->
+                <!--gradient[ele.getAttribute("data-key")] = ele.value;-->
+            <!--});-->
+            <!--heatmapOverlay.setOptions({"gradient": gradient});-->
+        <!--}-->
+
+        <!--//判断浏览区是否支持canvas-->
+        <!--function isSupportCanvas() {-->
+            <!--var elem = document.createElement('canvas');-->
+            <!--return !!(elem.getContext && elem.getContext('2d'));-->
+        <!--}-->
+    <!--}-->
+
+<!--</script>-->
+<!--&lt;!&ndash;显示交通拥堵情况&ndash;&gt;-->
+<!--<script type="text/javascript">-->
+    <!--document.getElementById("btn7").onclick=function () {-->
+        <!--var myChart = echarts.init(document.getElementById('main'));-->
+        <!--$.get('data/test.json', function (data) {-->
+
+            <!--var points = [].concat.apply([], data.map(function (track) {-->
+                <!--return track.map(function (seg) {-->
+                    <!--return seg.coord.concat([1]);-->
+                <!--});-->
+            <!--}));-->
+            <!--myChart.setOption(option = {-->
+                <!--animation: false,-->
+                <!--bmap: {-->
+                    <!--center: [118.420627,31.337951],-->
+                    <!--zoom: 14,-->
+                    <!--roam: true-->
+                <!--},-->
+                <!--visualMap: {-->
+                    <!--show: false,-->
+                    <!--top: 'top',-->
+                    <!--min: 0,-->
+                    <!--max: 5,-->
+                    <!--seriesIndex: 0,-->
+                    <!--calculable: true,-->
+                    <!--inRange: {-->
+                        <!--color: ['blue', 'blue', 'green', 'yellow', 'red']-->
+                    <!--}-->
+                <!--},-->
+                <!--series: [{-->
+                    <!--type: 'heatmap',-->
+                    <!--coordinateSystem: 'bmap',-->
+                    <!--data: points,-->
+                    <!--pointSize: 5,-->
+                    <!--blurSize: 6-->
+                <!--}]-->
+            <!--});-->
+
+            <!--// 添加百度地图插件-->
+            <!--var bmap = myChart.getModel().getComponent('bmap').getBMap();-->
+            <!--bmap.addControl(new BMap.MapTypeControl());-->
+
+        <!--});-->
+
+    <!--}-->
+
+<!--</script>-->
+<!--</div>-->
+
+
+<!--</body>-->
+
+<!--&lt;!&ndash;引入百度地图的jssdk，这里需要使用你在百度地图开发者平台申请的 ak&ndash;&gt;-->
+<!--<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=4XMF4mlCeqtT05OwGEnfGd6E6XGrITTA"></script>-->
+<!--<script src="js/vendor/Heatmap_min.js"></script>-->
+<!--&lt;!&ndash; 引入 ECharts &ndash;&gt;-->
+<!--<script src="js/vendor/echarts.min.js"></script>-->
+<!--&lt;!&ndash; 引入百度地图扩展 &ndash;&gt;-->
+<!--<script src="js/vendor/bmap.js"></script>-->
+<!--&lt;!&ndash; 引入jQuery &ndash;&gt;-->
+<!--<script src="js/vendor/jquery-3.3.1.min.js"></script>-->
+
+<!--&lt;!&ndash; <script src="js/points.js"></script> &ndash;&gt;-->
+<!--<script src="js/main.js"></script>-->
+
+<!--<script>-->
+    <!--//根据id 获取按钮，注册点击事件  添加事件处理函数-->
+    <!--document.getElementById("bt").onclick = function () {-->
+        <!--//判断当前点击按钮的value值-->
+        <!--if (this.value == "隐藏") {-->
+            <!--document.getElementById("dv").style.display = "none";-->
+            <!--this.value = "显示";-->
+        <!--} else if (this.value == "显示") {-->
+            <!--document.getElementById("dv").style.display = "block";-->
+            <!--this.value = "隐藏";-->
+        <!--}-->
+    <!--};-->
+<!--</script>-->
+
+
+<!--</html>-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>芜湖市道路交通流量可视化模拟系统</title>
+    <link rel="stylesheet" href="//a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+</head>
+
+<style>
+
+    #main {
+        position: absolute;
+    }
+
+    #dv {
+        /*background-color: #000102;*/
+        position: absolute;
+        right: 15px;
+        top: 20px;
+        height: 800px;
+        margin: 0;
+        padding: 0;
+    }
+
+    #btn2 {
+        width: 120px;
+        height: 20px;
+        margin-top: 20px;
+        border: 1px solid #ff9412;
+    }
+
+    #route {
+        color: #ff9412;
+        right: 20px;
+    }
+
+    #dv1 {
+        margin: 0;
+        padding: 0;
+    }
+
+    #btn, #btn1, #btn3, #btn4, #btn5 {
+        display: block;
+        width: 120px;
+        height: 30px;
+        border: 1px solid #ff9412;
+        margin: 20px auto 0;
+        text-align: center;
+        line-height: 30px;
+        color: #ff9412;
+        font-size: 12px;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+
+    #btn6 {
+        width: 120px;
+        height: 30px;
+        margin: 20px auto 0;
+        text-align: center;
+    }
+    #btn7 {
+        width: 120px;
+        height: 30px;
+        margin: 20px auto 0;
+        text-align: center;
+    }
+    #btn8 {
+        width: 120px;
+        height: 30px;
+        margin: 20px auto 0;
+        text-align: center;
+    }
+    #btn:hover, #btn1:hover, #btn3:hover, #btn4:hover, #btn5:hover {
+        color: #fff;
+        background-color: #ff9412;
+    }
+
+    * {
+        padding: 0;
+        margin: 0;
+    }
+
+    <!-- /*调用百度地图api去掉地图左下角的百度logo*/
+    -->
+    .BMap_cpyCtrl {
+        display: none;
+    }
+
+    .anchorBL {
+        display: none;
+    }
+
+    #bt {
+        position: absolute;
+        right: 15px;
+        top: 8px;
+    }
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
+
+
+
+    html, body, #container {
+        margin: 0; padding: 0; width: 100%; height: 100%;
+    }
+    /*#container{*/
+        /*position: absolute;*/
+    /*}*/
+     /*图例样式 */
+    .legend {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+    }
+
+    .legend ul {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .color-item {
+        width: 60px;
+        height: 20px;
+        display: inline-block;
+    }
+
+    .label-item {
+        display: inline-block;
+        width: 60px;
+        margin-left: -2px;
+        font-size: 14px;
+    }
+
+    /* 信息浮框 */
+    .info span {
+        min-width: 150px;
+        max-width: 300px;
+        color: #1b91ff;
+        font-size: 1.2em;
+    }
+    /*去除底部logo*/
+    .amap-logo{
+        display: none;
+        opacity:0 !important;
+    }
+    .amap-copyright {
+        opacity:0;
+    }
+    #info1{
+        display: none;
+        position: absolute;
+        top: 0;
+        right: 200px;
+    }
+#cheliul{
+    width: 300px;
+    height: 100%;
+    /*background-color: yellow;*/
+    position: absolute;
+    top:150px;
+    left: 0;
+    display:none;
+    font-weight: bold;
+    color: dodgerblue;
+}
+    #chel{
+        position: absolute;
+        top:120px;
+        left: 0;
+        display:none;
+    }
+</style>
+
+
+<body>
+
+<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+<!--<div id="main" style="width: 1280px; height:800px;"></div>-->
+<div id="main" style="width: 100%; height:100%;"></div>
+<div id="container"></div>
+<div class="legend">
+    <ul class="colors" id="legend-color"></ul>
+    <ul class="labels" id="legend-label"></ul>
+</div>
+<div class="info" style="width: 300px;" id="info1">
+    <h4>热力数据</h4>
+    <p>当前热力值：<span id="val">--</span></p>
+    <p>热力中心点坐标：
+        <span id="lng-lat">--</span>
+    </p>
+</div>
+
+<!--1280*800-->
+<input type="button" value="隐藏" id="bt"/>
+<div id="r-result"></div>
+<!--<div id="dv" style="width: 146px;height: 800px;">-->
+<div id="dv" style="width: 120px;height: 800px;">
+    <input type="button" value="增加一条线路" id="btn" class="but">
+    <input type="button" value="增加多条线路" id="btn1" class="but1">
+    <button type="button" class="btn btn-info" id="btn7">交通流量图</button>
+    <!--<input type="text"  value="输入查询公交线路" id="btn2">-->
+    <input input type="search" placeholder="输入查询公交线路" id="btn2">
+    <input type="button" value="查询" id="route">
+
+    <div id="dv1">
+        <input type="button" value="安徽师范大学" id="btn3">
+        <input type="button" value="中山路步行街" id="btn4">
+        <input type="button" value="赭山公园" id="btn5">
+
+        <button type="button" class="btn btn-info" id="btn6">显示热力图</button>
+        <button type="button" class="btn btn-info" id="btn8">显示热力图1</button>
+    </div>
+</div>
+
+<input type="button" value="车流量" id="chel"/>
+<div id="cheliul">
+    <h4>各主要路口高峰时间段数据分析</h4>
+    <table align="center">
+        <tr>
+            <th>编号</th>
+            <th>路口</th>
+            <th >高峰时间</th>
+            <th>&nbsp高峰流量</th>
+        </tr>
+
+        <tr>
+            <td rowspan="2">1</td>
+            <td rowspan="2">赭山路长江路</td>
+            <td>07:45-08:45 </td>
+            <td>&nbsp&nbsp&nbsp7911</td>
+        </tr>
+        <tr>
+            <td>17:15-18:15 </td>
+            <td>&nbsp&nbsp&nbsp7637</td>
+        </tr>
+
+        <tr>
+            <td rowspan="2">2</td>
+            <td rowspan="2">赭山路九华路</td>
+            <td>07:40-08:40 </td>
+            <td>&nbsp&nbsp&nbsp5419</td>
+        </tr>
+        <tr>
+            <td>17:10-18:10 </td>
+            <td>&nbsp&nbsp&nbsp5712</td>
+        </tr>
+
+        <tr>
+            <td rowspan="2">3</td>
+            <td rowspan="2">九华路北京路</td>
+            <td>07:45-08:45 </td>
+            <td>&nbsp&nbsp&nbsp5588</td>
+        </tr>
+        <tr>
+            <td>17:15-18:15 </td>
+            <td>&nbsp&nbsp&nbsp5315</td>
+        </tr>
+
+        <tr>
+            <td rowspan="2">4</td>
+            <td rowspan="2">赤铸山银湖路</td>
+            <td>07:15-08:15</td>
+            <td>&nbsp&nbsp&nbsp5409</td>
+        </tr>
+        <tr>
+            <td>17:10-18:10 </td>
+            <td>&nbsp&nbsp&nbsp5437</td>
+        </tr>
+
+        <tr>
+            <td rowspan="2">5</td>
+            <td rowspan="2">赭山路银湖路</td>
+            <td>07:10-08:10</td>
+            <td>&nbsp&nbsp&nbsp4514</td>
+        </tr>
+        <tr>
+            <td>17:25-18:25 </td>
+            <td>&nbsp&nbsp&nbsp4635</td>
+        </tr>
+
+        <tr>
+            <td rowspan="2">6</td>
+            <td rowspan="2">银湖路天门山路</td>
+            <td>07:20-08:20</td>
+            <td>&nbsp&nbsp&nbsp4566</td>
+        </tr>
+        <tr>
+            <td>17:25-18:25 </td>
+            <td>&nbsp&nbsp&nbsp4542</td>
+        </tr>
+
+        <tr>
+            <td rowspan="2">7</td>
+            <td rowspan="2">赤铸山长江路 </td>
+            <td> 07:20-08:20</td>
+            <td>&nbsp&nbsp&nbsp4455</td>
+        </tr>
+        <tr>
+            <td>17:05-18:05 </td>
+            <td>&nbsp&nbsp&nbsp4026</td>
+        </tr>
+
+        <tr>
+            <td rowspan="2">8</td>
+            <td rowspan="2">长江路天门山路 </td>
+            <td> 07:20-08:20</td>
+            <td>&nbsp&nbsp&nbsp4169</td>
+        </tr>
+        <tr>
+            <td>17:15-18:15 </td>
+            <td>&nbsp&nbsp&nbsp3960</td>
+        </tr>
+
+        <tr>
+            <td rowspan="2"> 9</td>
+            <td rowspan="2">北京路文化路  </td>
+            <td>07:45-08:45</td>
+            <td>&nbsp&nbsp&nbsp3910</td>
+        </tr>
+        <tr>
+            <td>17:15-18:15 </td>
+            <td>&nbsp&nbsp&nbsp3958</td>
+        </tr>
+
+        <tr>
+            <td rowspan="2"> 10</td>
+            <td rowspan="2">中山北长江路   </td>
+            <td>07:25-08:25</td>
+            <td>&nbsp&nbsp&nbsp3738</td>
+        </tr>
+        <tr>
+            <td>17:10-18:10 </td>
+            <td> &nbsp&nbsp&nbsp3875</td>
+        </tr>
+
+    </table>
+
+
+
+
+
+</div>
+
+<!--增加一辆车-->
+<script type="text/javascript">
+    document.getElementById("btn").onclick = function () {
+        var myChart = echarts.init(document.getElementById('main'));
+        option = null;
+
+        $.get('data/car1.json', function (data) {
+            var hStep = 300 / (data.length - 1);
+            var busLines = [].concat.apply([], data.map(function (busLine, idx) {
+                var prevPt;
+                var points = [];
+                for (var i = 0; i < busLine.length; i += 2) {
+                    var pt = [busLine[i], busLine[i + 1]];
+                    if (i > 0) {
+                        pt = [
+                            prevPt[0] + pt[0],
+                            prevPt[1] + pt[1]
+                        ];
+                    }
+                    prevPt = pt;
+
+                    points.push([pt[0] / 1e4, pt[1] / 1e4]);
+                }
+                return {
+                    coords: points,
+                    lineStyle: {
+                        normal: {
+                            // color: echarts.color.modifyHSL('#5A94DF', Math.round(hStep * idx))
+                            color: echarts.color.modifyHSL('#D014DF', Math.round(hStep * idx))
+                        }
+                    }, effect: {
+                        symbolSize: 3  //1.5
+                    },
+                };
+            }));
+            busLines[0].effect.symbolSize = 10;
+            myChart.setOption(option = {
+                bmap: {
+                    center: [118.416438, 31.357057],
+                    zoom: 13,
+                    roam: true,
+                    mapStyle: {
+                        'styleJson': [
+                            {
+                                'featureType': 'water',
+                                'elementType': 'all',
+                                'stylers': {
+                                    'color': '#062244'       //'#031628'
+                                }
+                            },
+                            {
+                                'featureType': 'land',
+                                'elementType': 'geometry',
+                                'stylers': {
+                                    'color': '#020222'         //'#000102'
+                                }
+                            },
+                            {
+                                'featureType': 'highway',
+                                'elementType': 'all',
+                                'stylers': {
+                                    'visibility': 'off'
+                                }
+                            },
+                            {
+                                'featureType': 'arterial',
+                                'elementType': 'geometry.fill',
+                                'stylers': {
+                                    'color': '#000000'
+                                }
+                            },
+                            {
+                                'featureType': 'arterial',
+                                'elementType': 'geometry.stroke',
+                                'stylers': {
+                                    'color': '#0b3d51'
+                                }
+                            },
+                            {
+                                'featureType': 'local',
+                                'elementType': 'geometry',
+                                'stylers': {
+                                    'color': '#000000'
+                                }
+                            },
+                            {
+                                'featureType': 'railway',
+                                'elementType': 'geometry.fill',
+                                'stylers': {
+                                    'color': '#000000'
+                                }
+                            },
+                            {
+                                'featureType': 'railway',
+                                'elementType': 'geometry.stroke',
+                                'stylers': {
+                                    'color': '#08304b'
+                                }
+                            },
+                            {
+                                'featureType': 'subway',
+                                'elementType': 'geometry',
+                                'stylers': {
+                                    'lightness': -70
+                                }
+                            },
+                            {
+                                'featureType': 'building',
+                                'elementType': 'geometry.fill',
+                                'stylers': {
+                                    'color': '#000000'
+                                }
+                            },
+                            {
+                                'featureType': 'all',
+                                'elementType': 'labels.text.fill',
+                                'stylers': {
+                                    'color': '#857f7f'
+                                }
+                            },
+                            {
+                                'featureType': 'all',
+                                'elementType': 'labels.text.stroke',
+                                'stylers': {
+                                    'color': '#000000'
+                                }
+                            },
+                            {
+                                'featureType': 'building',
+                                'elementType': 'geometry',
+                                'stylers': {
+                                    'color': '#022338'
+                                }
+                            },
+                            {
+                                'featureType': 'green',
+                                'elementType': 'geometry',
+                                'stylers': {
+                                    'color': '#062032'
+                                }
+                            },
+                            {
+                                'featureType': 'boundary',
+                                'elementType': 'all',
+                                'stylers': {
+                                    'color': '#465b6c'
+                                }
+                            },
+                            {
+                                'featureType': 'manmade',
+                                'elementType': 'all',
+                                'stylers': {
+                                    'color': '#022338'
+                                }
+                            },
+                            {
+                                'featureType': 'label',
+                                'elementType': 'all',
+                                'stylers': {
+                                    'visibility': 'off'
+                                }
+                            }
+                        ]
+                    }
+                },
+                series: [{
+                    type: 'lines',
+                    coordinateSystem: 'bmap',
+                    polyline: true,
+                    data: busLines,
+                    silent: true,
+                    lineStyle: {
+                        normal: {
+                            // color: '#c23531',
+                            // color: 'rgb(200, 35, 45)',
+                            opacity: 0.2,
+                            width: 1
+                        }
+                    },
+                    progressiveThreshold: 500,
+                    progressive: 200
+                }, {
+                    type: 'lines',
+                    coordinateSystem: 'bmap',
+                    polyline: true,
+                    data: busLines,
+                    lineStyle: {
+                        normal: {
+                            width: 0   //0
+                        }
+                    },
+                    effect: {
+                        constantSpeed: 20,
+                        show: true,
+                        trailLength: 0.1,
+                        symbolSize: 3  //1.5
+                    },
+                    zlevel: 1
+                }]
+            });
+        });
+
+        if (option && typeof option === "object") {
+            myChart.setOption(option, true);
+        }
+// 首先lines-bus.json是一个二维数组，里面每一个一维数组存储一辆公交车的轨迹，其中第一个和第二个元素为初始坐标（经纬度*10000），
+// 往后每两个元素为一组表示经纬度的偏移量（*10000）。
+//
+// var busLines = [].concat.apply([], data.map(function (busLine, idx) {}))是将data数组映射到一个新的数组里，即将lines-bus.json转换为真实的经纬度坐标。
+//
+// var pt = [busLine[i], busLine[i + 1]];为起始点坐标。
+//
+// if (i > 0) {
+//
+//     pt = [prevPt[0] + pt[0], prevPt[1] + pt[1] ];
+//
+// }计算加上偏移量后的经纬度*10000
+//
+// prevPt = pt;将当前坐标赋值给上一个点坐标，继续循环；
+//
+// points.push([pt[0] / 1e4, pt[1] / 1e4]);坐标小数点前移四位得到真实的经纬度值，存储到points数组里。
+//
+//  return {
+//
+//      coords: points,
+//
+//      lineStyle: {
+//
+//          normal: {
+//
+//              color: echarts.color.modifyHSL('#5A94DF', Math.round(hStep * idx))
+//
+//          }
+//
+//      }
+//
+//  };为新数组的存储格式，新的数组每一个元素是一个对象。
+    }
+</script>
+<!--增加多辆车-->
+<script type="text/javascript">
+    document.getElementById("btn1").onclick = function () {
+        var myChart = echarts.init(document.getElementById('main'));
+        option = null;
+        $.get('data/car2.json', function (data) {
+            var hStep = 300 / (data.length - 1);
+            var busLines = [].concat.apply([], data.map(function (busLine, idx) {
+                var prevPt;
+                var points = [];
+                for (var i = 0; i < busLine.length; i += 2) {
+                    var pt = [busLine[i], busLine[i + 1]];
+                    if (i > 0) {
+                        pt = [
+                            prevPt[0] + pt[0],
+                            prevPt[1] + pt[1]
+                        ];
+                    }
+                    prevPt = pt;
+
+                    points.push([pt[0] / 1e4, pt[1] / 1e4]);
+                }
+                return {
+                    coords: points,
+                    lineStyle: {
+                        normal: {
+                            color: echarts.color.modifyHSL('#5A94DF', Math.round(hStep * idx))
+                        }
+                    }
+                };
+            }));
+            myChart.setOption(option = {
+                bmap: {
+                    center: [118.416438, 31.357057],
+                    zoom: 13,
+                    roam: true,
+                    mapStyle: {
+                        'styleJson': [
+                            {
+                                'featureType': 'water',
+                                'elementType': 'all',
+                                'stylers': {
+                                    'color': '#062244'       //'#031628'
+                                }
+                            },
+                            {
+                                'featureType': 'land',
+                                'elementType': 'geometry',
+                                'stylers': {
+                                    'color': '#020222'         //'#000102'
+                                }
+                            },
+                            {
+                                'featureType': 'highway',
+                                'elementType': 'all',
+                                'stylers': {
+                                    'visibility': 'off'
+                                }
+                            },
+                            {
+                                'featureType': 'arterial',
+                                'elementType': 'geometry.fill',
+                                'stylers': {
+                                    'color': '#000000'
+                                }
+                            },
+                            {
+                                'featureType': 'arterial',
+                                'elementType': 'geometry.stroke',
+                                'stylers': {
+                                    'color': '#0b3d51'
+                                }
+                            },
+                            {
+                                'featureType': 'local',
+                                'elementType': 'geometry',
+                                'stylers': {
+                                    'color': '#000000'
+                                }
+                            },
+                            {
+                                'featureType': 'railway',
+                                'elementType': 'geometry.fill',
+                                'stylers': {
+                                    'color': '#000000'
+                                }
+                            },
+                            {
+                                'featureType': 'railway',
+                                'elementType': 'geometry.stroke',
+                                'stylers': {
+                                    'color': '#08304b'
+                                }
+                            },
+                            {
+                                'featureType': 'subway',
+                                'elementType': 'geometry',
+                                'stylers': {
+                                    'lightness': -70
+                                }
+                            },
+                            {
+                                'featureType': 'building',
+                                'elementType': 'geometry.fill',
+                                'stylers': {
+                                    'color': '#000000'
+                                }
+                            },
+                            {
+                                'featureType': 'all',
+                                'elementType': 'labels.text.fill',
+                                'stylers': {
+                                    'color': '#857f7f'
+                                }
+                            },
+                            {
+                                'featureType': 'all',
+                                'elementType': 'labels.text.stroke',
+                                'stylers': {
+                                    'color': '#000000'
+                                }
+                            },
+                            {
+                                'featureType': 'building',
+                                'elementType': 'geometry',
+                                'stylers': {
+                                    'color': '#022338'
+                                }
+                            },
+                            {
+                                'featureType': 'green',
+                                'elementType': 'geometry',
+                                'stylers': {
+                                    'color': '#062032'
+                                }
+                            },
+                            {
+                                'featureType': 'boundary',
+                                'elementType': 'all',
+                                'stylers': {
+                                    'color': '#465b6c'
+                                }
+                            },
+                            {
+                                'featureType': 'manmade',
+                                'elementType': 'all',
+                                'stylers': {
+                                    'color': '#022338'
+                                }
+                            },
+                            {
+                                'featureType': 'label',
+                                'elementType': 'all',
+                                'stylers': {
+                                    'visibility': 'off'
+                                }
+                            }
+                        ]
+                    }
+                },
+                series: [{
+                    type: 'lines',
+                    coordinateSystem: 'bmap',
+                    polyline: true,
+                    data: busLines,
+                    silent: true,
+                    lineStyle: {
+                        normal: {
+                            // color: '#c23531',
+                            // color: 'rgb(200, 35, 45)',
+                            opacity: 0.2,
+                            width: 1
+                        }
+                    },
+                    progressiveThreshold: 500,
+                    progressive: 200
+                }, {
+                    type: 'lines',
+                    coordinateSystem: 'bmap',
+                    polyline: true,
+                    data: busLines,
+                    lineStyle: {
+                        normal: {
+                            width: 0   //0
+                        }
+                    },
+                    effect: {
+                        constantSpeed: 20,
+                        show: true,
+                        trailLength: 0.1,
+                        symbolSize: 3   //1.5
+                    },
+                    zlevel: 1
+                }]
+            });
+        });
+        if (option && typeof option === "object") {
+            myChart.setOption(option, true);
+        }
+// 首先lines-bus.json是一个二维数组，里面每一个一维数组存储一辆公交车的轨迹，其中第一个和第二个元素为初始坐标（经纬度*10000），
+// 往后每两个元素为一组表示经纬度的偏移量（*10000）。
+//
+// var busLines = [].concat.apply([], data.map(function (busLine, idx) {}))是将data数组映射到一个新的数组里，即将lines-bus.json转换为真实的经纬度坐标。
+//
+// var pt = [busLine[i], busLine[i + 1]];为起始点坐标。
+//
+// if (i > 0) {
+//
+//     pt = [prevPt[0] + pt[0], prevPt[1] + pt[1] ];
+//
+// }计算加上偏移量后的经纬度*10000
+//
+// prevPt = pt;将当前坐标赋值给上一个点坐标，继续循环；
+//
+// points.push([pt[0] / 1e4, pt[1] / 1e4]);坐标小数点前移四位得到真实的经纬度值，存储到points数组里。
+//
+//  return {
+//
+//      coords: points,
+//
+//      lineStyle: {
+//
+//          normal: {
+//
+//              color: echarts.color.modifyHSL('#5A94DF', Math.round(hStep * idx))
+//
+//          }
+//
+//      }
+//
+//  };为新数组的存储格式，新的数组每一个元素是一个对象。
+    }
+</script>
+<!--查询交通路线图-->
+<script type="text/javascript">
+    document.getElementById("route").onclick = function () {
+        var v = document.getElementById("btn2").value;
+        // 百度地图API功能
+        var map = new BMap.Map("main");            // 创建Map实例
+        // var mapStyle={style:"midnight"}
+        // map.setMapStyle(mapStyle);
+        var myStyleJson = [
+            {
+                'featureType': 'water',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#062244'       //'#031628'
+                }
+            },
+            {
+                'featureType': 'land',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#020222'         //'#000102'
+                }
+            },
+            {
+                'featureType': 'highway',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            },
+            {
+                'featureType': 'arterial',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'arterial',
+                'elementType': 'geometry.stroke',
+                'stylers': {
+                    'color': '#0b3d51'
+                }
+            },
+            {
+                'featureType': 'local',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'railway',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'railway',
+                'elementType': 'geometry.stroke',
+                'stylers': {
+                    'color': '#08304b'
+                }
+            },
+            {
+                'featureType': 'subway',
+                'elementType': 'geometry',
+                'stylers': {
+                    'lightness': -70
+                }
+            },
+            {
+                'featureType': 'building',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'all',
+                'elementType': 'labels.text.fill',
+                'stylers': {
+                    'color': '#857f7f'
+                }
+            },
+            {
+                'featureType': 'all',
+                'elementType': 'labels.text.stroke',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'building',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#022338'
+                }
+            },
+            {
+                'featureType': 'green',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#062032'
+                }
+            },
+            {
+                'featureType': 'boundary',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#465b6c'
+                }
+            },
+            {
+                'featureType': 'manmade',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#022338'
+                }
+            },
+            {
+                'featureType': 'label',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }
+        ]
+        map.setMapStyle({styleJson: myStyleJson});
+        map.centerAndZoom(new BMap.Point(118.4170, 31.3802), 12);
+
+        var busline = new BMap.BusLineSearch(map, {
+            renderOptions: {map: map, panel: "r-result"},
+            onGetBusListComplete: function (result) {
+                if (result) {
+                    var fstLine = result.getBusListItem(0);//获取第一个公交列表显示到map上
+                    busline.getBusLine(fstLine);
+                }
+            }
+        });
+
+        function busSearch() {
+            var busName = v;
+            busline.getBusList(busName);
+        }
+
+        setTimeout(function () {
+            busSearch();
+        }, 1500);
+        map.enableScrollWheelZoom();   //启用滚轮放大缩小，默认禁用
+        map.enableContinuousZoom();    //启用地图惯性拖拽，默认禁用
+    }
+
+</script>
+<!--小车路线去师大-->
+<script type="text/javascript">
+    document.getElementById("btn3").onclick = function () {
+        // 百度地图API功能
+        var map = new BMap.Map("main");
+        var myStyleJson = [
+            {
+                'featureType': 'water',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#062244'       //'#031628'
+                }
+            },
+            {
+                'featureType': 'land',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#020222'         //'#000102'
+                }
+            },
+            {
+                'featureType': 'highway',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            },
+            {
+                'featureType': 'arterial',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'arterial',
+                'elementType': 'geometry.stroke',
+                'stylers': {
+                    'color': '#0b3d51'
+                }
+            },
+            {
+                'featureType': 'local',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'railway',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'railway',
+                'elementType': 'geometry.stroke',
+                'stylers': {
+                    'color': '#08304b'
+                }
+            },
+            {
+                'featureType': 'subway',
+                'elementType': 'geometry',
+                'stylers': {
+                    'lightness': -70
+                }
+            },
+            {
+                'featureType': 'building',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'all',
+                'elementType': 'labels.text.fill',
+                'stylers': {
+                    'color': '#857f7f'
+                }
+            },
+            {
+                'featureType': 'all',
+                'elementType': 'labels.text.stroke',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'building',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#022338'
+                }
+            },
+            {
+                'featureType': 'green',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#062032'
+                }
+            },
+            {
+                'featureType': 'boundary',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#465b6c'
+                }
+            },
+            {
+                'featureType': 'manmade',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#022338'
+                }
+            },
+            {
+                'featureType': 'label',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }
+        ]
+        map.setMapStyle({styleJson: myStyleJson});
+        map.centerAndZoom(new BMap.Point(118.3718, 31.3380), 15);
+
+        var myP1 = new BMap.Point(118.420835, 31.346784);    //起点
+        var myP2 = new BMap.Point(118.381281, 31.339824);    //终点
+        var myIcon = new BMap.Icon("img/公交车.png", new BMap.Size(32, 70), {    //小车图片
+            //offset: new BMap.Size(0, -5),    //相当于CSS精灵
+            imageOffset: new BMap.Size(0, 0)    //图片的偏移量。为了是图片底部中心对准坐标点。
+        });
+        var driving2 = new BMap.DrivingRoute(map, {renderOptions: {map: map, autoViewport: true}});    //驾车实例
+        driving2.search(myP1, myP2);    //显示一条公交线路
+
+        window.run = function () {
+            var driving = new BMap.DrivingRoute(map);    //驾车实例
+            driving.search(myP1, myP2);
+            driving.setSearchCompleteCallback(function () {
+                var pts = driving.getResults().getPlan(0).getRoute(0).getPath();    //通过驾车实例，获得一系列点的数组
+                var paths = pts.length;    //获得有几个点
+
+                var carMk = new BMap.Marker(pts[0], {icon: myIcon});
+                map.addOverlay(carMk);
+                i = 0;
+
+                function resetMkPoint(i) {
+                    carMk.setPosition(pts[i]);
+                    if (i < paths) {
+                        setTimeout(function () {
+                            i++;
+                            resetMkPoint(i);
+                        }, 100);
+                    }
+                }
+
+                setTimeout(function () {
+                    resetMkPoint(5);
+                }, 1000)
+
+            });
+        }
+
+        setTimeout(function () {
+            run();
+        }, 1500);
+        map.enableScrollWheelZoom();   //启用滚轮放大缩小，默认禁用
+        map.enableContinuousZoom();    //启用地图惯性拖拽，默认禁用
+    }
+
+</script>
+<!--小车去步行街-->
+<script type="text/javascript">
+    document.getElementById("btn4").onclick = function () {
+        // 百度地图API功能
+        var map = new BMap.Map("main");
+        var myStyleJson = [
+            {
+                'featureType': 'water',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#062244'       //'#031628'
+                }
+            },
+            {
+                'featureType': 'land',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#020222'         //'#000102'
+                }
+            },
+            {
+                'featureType': 'highway',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            },
+            {
+                'featureType': 'arterial',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'arterial',
+                'elementType': 'geometry.stroke',
+                'stylers': {
+                    'color': '#0b3d51'
+                }
+            },
+            {
+                'featureType': 'local',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'railway',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'railway',
+                'elementType': 'geometry.stroke',
+                'stylers': {
+                    'color': '#08304b'
+                }
+            },
+            {
+                'featureType': 'subway',
+                'elementType': 'geometry',
+                'stylers': {
+                    'lightness': -70
+                }
+            },
+            {
+                'featureType': 'building',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'all',
+                'elementType': 'labels.text.fill',
+                'stylers': {
+                    'color': '#857f7f'
+                }
+            },
+            {
+                'featureType': 'all',
+                'elementType': 'labels.text.stroke',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'building',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#022338'
+                }
+            },
+            {
+                'featureType': 'green',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#062032'
+                }
+            },
+            {
+                'featureType': 'boundary',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#465b6c'
+                }
+            },
+            {
+                'featureType': 'manmade',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#022338'
+                }
+            },
+            {
+                'featureType': 'label',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }
+        ]
+        map.setMapStyle({styleJson: myStyleJson});
+        map.centerAndZoom(new BMap.Point(118.3718, 31.3380), 15);
+
+        var myP1 = new BMap.Point(118.420835, 31.346784);    //起点
+        var myP2 = new BMap.Point(118.376096, 31.331921);    //终点
+        var myIcon = new BMap.Icon("img/公交车.png", new BMap.Size(32, 70), {    //小车图片
+            //offset: new BMap.Size(0, -5),    //相当于CSS精灵
+            imageOffset: new BMap.Size(0, 0)    //图片的偏移量。为了是图片底部中心对准坐标点。
+        });
+        var driving2 = new BMap.DrivingRoute(map, {renderOptions: {map: map, autoViewport: true}});    //驾车实例
+        driving2.search(myP1, myP2);    //显示一条公交线路
+
+        window.run = function () {
+            var driving = new BMap.DrivingRoute(map);    //驾车实例
+            driving.search(myP1, myP2);
+            driving.setSearchCompleteCallback(function () {
+                var pts = driving.getResults().getPlan(0).getRoute(0).getPath();    //通过驾车实例，获得一系列点的数组
+                var paths = pts.length;    //获得有几个点
+
+                var carMk = new BMap.Marker(pts[0], {icon: myIcon});
+                map.addOverlay(carMk);
+                i = 0;
+
+                function resetMkPoint(i) {
+                    carMk.setPosition(pts[i]);
+                    if (i < paths) {
+                        setTimeout(function () {
+                            i++;
+                            resetMkPoint(i);
+                        }, 100);
+                    }
+                }
+
+                setTimeout(function () {
+                    resetMkPoint(5);
+                }, 1000)
+
+            });
+        }
+
+        setTimeout(function () {
+            run();
+        }, 1500);
+        map.enableScrollWheelZoom();   //启用滚轮放大缩小，默认禁用
+        map.enableContinuousZoom();    //启用地图惯性拖拽，默认禁用
+    }
+
+</script>
+<!--小车去公园-->
+<script type="text/javascript">
+    document.getElementById("btn5").onclick = function () {
+        // 百度地图API功能
+        var map = new BMap.Map("main");
+        var myStyleJson = [
+            {
+                'featureType': 'water',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#062244'       //'#031628'
+                }
+            },
+            {
+                'featureType': 'land',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#020222'         //'#000102'
+                }
+            },
+            {
+                'featureType': 'highway',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            },
+            {
+                'featureType': 'arterial',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'arterial',
+                'elementType': 'geometry.stroke',
+                'stylers': {
+                    'color': '#0b3d51'
+                }
+            },
+            {
+                'featureType': 'local',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'railway',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'railway',
+                'elementType': 'geometry.stroke',
+                'stylers': {
+                    'color': '#08304b'
+                }
+            },
+            {
+                'featureType': 'subway',
+                'elementType': 'geometry',
+                'stylers': {
+                    'lightness': -70
+                }
+            },
+            {
+                'featureType': 'building',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'all',
+                'elementType': 'labels.text.fill',
+                'stylers': {
+                    'color': '#857f7f'
+                }
+            },
+            {
+                'featureType': 'all',
+                'elementType': 'labels.text.stroke',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'building',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#022338'
+                }
+            },
+            {
+                'featureType': 'green',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#062032'
+                }
+            },
+            {
+                'featureType': 'boundary',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#465b6c'
+                }
+            },
+            {
+                'featureType': 'manmade',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#022338'
+                }
+            },
+            {
+                'featureType': 'label',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }
+        ]
+        map.setMapStyle({styleJson: myStyleJson});
+        map.centerAndZoom(new BMap.Point(118.3718, 31.3380), 15);
+
+        var myP1 = new BMap.Point(118.420835, 31.346784);    //起点
+        var myP2 = new BMap.Point(118.383547, 31.34884);    //终点
+        var myIcon = new BMap.Icon("img/公交车.png", new BMap.Size(32, 70), {    //小车图片
+            //offset: new BMap.Size(0, -5),    //相当于CSS精灵
+            imageOffset: new BMap.Size(0, 0)    //图片的偏移量。为了是图片底部中心对准坐标点。
+        });
+        var driving2 = new BMap.DrivingRoute(map, {renderOptions: {map: map, autoViewport: true}});    //驾车实例
+        driving2.search(myP1, myP2);    //显示一条公交线路
+
+        window.run = function () {
+            var driving = new BMap.DrivingRoute(map);    //驾车实例
+            driving.search(myP1, myP2);
+            driving.setSearchCompleteCallback(function () {
+                var pts = driving.getResults().getPlan(0).getRoute(0).getPath();    //通过驾车实例，获得一系列点的数组
+                var paths = pts.length;    //获得有几个点
+
+                var carMk = new BMap.Marker(pts[0], {icon: myIcon});
+                map.addOverlay(carMk);
+                i = 0;
+
+                function resetMkPoint(i) {
+                    carMk.setPosition(pts[i]);
+                    if (i < paths) {
+                        setTimeout(function () {
+                            i++;
+                            resetMkPoint(i);
+                        }, 100);
+                    }
+                }
+
+                setTimeout(function () {
+                    resetMkPoint(5);
+                }, 1000)
+
+            });
+        }
+
+        setTimeout(function () {
+            run();
+        }, 1500);
+        map.enableScrollWheelZoom();   //启用滚轮放大缩小，默认禁用
+        map.enableContinuousZoom();    //启用地图惯性拖拽，默认禁用
+    }
+
+</script>
+<!--显示热力图-->
+<script type="text/javascript">
+    document.getElementById("btn6").onclick = function () {
+
+        var map = new BMap.Map("main");       // 创建地图实例
+        var myStyleJson = [
+            {
+                'featureType': 'water',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#062244'       //'#031628'
+                }
+            },
+            {
+                'featureType': 'land',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#020222'         //'#000102'
+                }
+            },
+            {
+                'featureType': 'highway',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            },
+            {
+                'featureType': 'arterial',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'arterial',
+                'elementType': 'geometry.stroke',
+                'stylers': {
+                    'color': '#0b3d51'
+                }
+            },
+            {
+                'featureType': 'local',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'railway',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'railway',
+                'elementType': 'geometry.stroke',
+                'stylers': {
+                    'color': '#08304b'
+                }
+            },
+            {
+                'featureType': 'subway',
+                'elementType': 'geometry',
+                'stylers': {
+                    'lightness': -70
+                }
+            },
+            {
+                'featureType': 'building',
+                'elementType': 'geometry.fill',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'all',
+                'elementType': 'labels.text.fill',
+                'stylers': {
+                    'color': '#857f7f'
+                }
+            },
+            {
+                'featureType': 'all',
+                'elementType': 'labels.text.stroke',
+                'stylers': {
+                    'color': '#000000'
+                }
+            },
+            {
+                'featureType': 'building',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#022338'
+                }
+            },
+            {
+                'featureType': 'green',
+                'elementType': 'geometry',
+                'stylers': {
+                    'color': '#062032'
+                }
+            },
+            {
+                'featureType': 'boundary',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#465b6c'
+                }
+            },
+            {
+                'featureType': 'manmade',
+                'elementType': 'all',
+                'stylers': {
+                    'color': '#022338'
+                }
+            },
+            {
+                'featureType': 'label',
+                'elementType': 'all',
+                'stylers': {
+                    'visibility': 'off'
+                }
+            }
+        ]
+        map.setMapStyle({styleJson: myStyleJson});
+        var point = new BMap.Point(118.424257, 31.336101);
+        map.centerAndZoom(point, 13);             // 初始化地图，设置中心点坐标和地图级别
+        map.enableScrollWheelZoom(); // 允许滚轮缩放
+
+        var points = [{"lng": 118.409803, "lat": 31.404671, "count": 100},
+            {"lng": 118.409623, "lat": 31.404301, "count": 98},
+            {"lng": 118.3407, "lat": 31.3947, "count": 34},
+            {"lng": 118.383547, "lat": 31.34884, "count": 98},
+            {"lng": 118.476528, "lat": 31.34794, "count": 100},
+            {"lng": 118.398692, "lat": 31.354271, "count": 100},
+            {"lng": 118.475305, "lat": 31.36448, "count": 100},
+            {"lng": 118.4326, "lat": 31.3793, "count": 6},
+            {"lng": 118.3502, "lat": 31.2677, "count": 19},
+            {"lng": 118.4720, "lat": 31.3384, "count": 66},
+            {"lng": 118.3664, "lat": 31.3702, "count": 98},
+            {"lng": 118.4760, "lat": 31.3277, "count": 18},
+            {"lng": 118.4103, "lat": 31.2596, "count": 18},
+            {"lng": 118.4187, "lat": 31.3040, "count": 90},
+            {"lng": 118.4607, "lat": 31.3541, "count": 11},
+            {"lng": 118.4502, "lat": 31.2838, "count": 98},
+            {"lng": 118.4574, "lat": 31.2815, "count": 50},
+            {"lng": 118.4686, "lat": 31.3135, "count": 71},
+            {"lng": 118.4015, "lat": 31.2991, "count": 7},
+            {"lng": 118.4955, "lat": 31.3003, "count": 13},
+            {"lng": 118.3825, "lat": 31.4097, "count": 83},
+            {"lng": 118.3412, "lat": 31.3615, "count": 3},
+            {"lng": 118.4012, "lat": 31.3813, "count": 53},
+            {"lng": 118.4843, "lat": 31.2790, "count": 58},
+            {"lng": 118.4191, "lat": 31.2750, "count": 14},
+            {"lng": 118.4594, "lat": 31.3579, "count": 28},
+            {"lng": 118.4550, "lat": 31.3420, "count": 90},
+            {"lng": 118.4619, "lat": 31.2791, "count": 97},
+            {"lng": 118.4392, "lat": 31.3493, "count": 99},
+            {"lng": 118.3946, "lat": 31.3135, "count": 21},
+            {"lng": 118.3498, "lat": 31.2525, "count": 27},
+            {"lng": 118.3839, "lat": 31.3023, "count": 47},
+            {"lng": 118.4531, "lat": 31.2719, "count": 65},
+            {"lng": 118.4830, "lat": 31.2976, "count": 54},
+            {"lng": 118.3814, "lat": 31.3084, "count": 40},
+            {"lng": 118.4043, "lat": 31.4011, "count": 88},
+            {"lng": 118.4772, "lat": 31.3052, "count": 92},
+            {"lng": 118.4117, "lat": 31.4029, "count": 87},
+            {"lng": 118.4403, "lat": 31.3311, "count": 71},
+            {"lng": 118.4797, "lat": 31.3549, "count": 79},
+            {"lng": 118.3814, "lat": 31.3231, "count": 99},
+            {"lng": 118.4406, "lat": 31.3055, "count": 41},
+            {"lng": 118.3539, "lat": 31.3452, "count": 56},
+            {"lng": 118.3683, "lat": 31.3051, "count": 82},
+            {"lng": 118.4803, "lat": 31.2597, "count": 69},
+            {"lng": 118.4846, "lat": 31.3940, "count": 46},
+            {"lng": 118.5005, "lat": 31.2700, "count": 94},
+            {"lng": 118.4565, "lat": 31.3005, "count": 40},
+            {"lng": 118.4895, "lat": 31.2830, "count": 45},
+            {"lng": 118.3620, "lat": 31.3385, "count": 95},
+            {"lng": 118.3752, "lat": 31.3885, "count": 43},
+            {"lng": 118.4337, "lat": 31.2789, "count": 3},
+            {"lng": 118.4025, "lat": 31.2759, "count": 77},
+            {"lng": 118.4491, "lat": 31.3649, "count": 86},
+            {"lng": 118.4404, "lat": 31.3950, "count": 60},
+            {"lng": 118.4546, "lat": 31.2845, "count": 49},
+            {"lng": 118.4852, "lat": 31.3430, "count": 75},
+            {"lng": 118.3441, "lat": 31.3768, "count": 41},
+            {"lng": 118.4984, "lat": 31.4019, "count": 36},
+            {"lng": 118.3705, "lat": 31.3523, "count": 9},
+            {"lng": 118.4942, "lat": 31.3482, "count": 43},
+            {"lng": 118.3703, "lat": 31.3925, "count": 52},
+            {"lng": 118.4922, "lat": 31.4087, "count": 57},
+            {"lng": 118.4349, "lat": 31.4073, "count": 74},
+            {"lng": 118.4630, "lat": 31.3873, "count": 63},
+            {"lng": 118.4269, "lat": 31.3614, "count": 99},
+            {"lng": 118.4435, "lat": 31.2811, "count": 31},
+            {"lng": 118.4677, "lat": 31.4176, "count": 12},
+            {"lng": 118.3879, "lat": 31.4024, "count": 89},
+            {"lng": 118.3570, "lat": 31.2889, "count": 52},
+            {"lng": 118.4867, "lat": 31.3536, "count": 44},
+            {"lng": 118.4483, "lat": 31.3053, "count": 50},
+            {"lng": 118.4387, "lat": 31.2593, "count": 45},
+            {"lng": 118.3853, "lat": 31.2891, "count": 94},
+            {"lng": 118.3661, "lat": 31.3553, "count": 96},
+            {"lng": 118.3464, "lat": 31.2878, "count": 35},
+            {"lng": 118.4609, "lat": 31.4095, "count": 43},
+            {"lng": 118.3778, "lat": 31.3567, "count": 95},
+            {"lng": 118.4965, "lat": 31.2637, "count": 46},
+            {"lng": 118.4144, "lat": 31.4077, "count": 49},
+            {"lng": 118.3644, "lat": 31.3960, "count": 36},
+            {"lng": 118.4512, "lat": 31.3379, "count": 42},
+            {"lng": 118.4551, "lat": 31.2937, "count": 62},
+            {"lng": 118.4553, "lat": 31.2520, "count": 59},
+            {"lng": 118.4167, "lat": 31.3821, "count": 52},
+            {"lng": 118.4075, "lat": 31.2601, "count": 57},
+            {"lng": 118.3507, "lat": 31.3664, "count": 26},
+            {"lng": 118.4814, "lat": 31.2590, "count": 86},
+            {"lng": 118.4806, "lat": 31.2656, "count": 43},
+            {"lng": 118.3610, "lat": 31.3259, "count": 62},
+            {"lng": 118.4112, "lat": 31.4188, "count": 69},
+            {"lng": 118.4480, "lat": 31.2747, "count": 76},
+            {"lng": 118.4669, "lat": 31.2647, "count": 24},
+            {"lng": 118.3984, "lat": 31.3535, "count": 27},
+            {"lng": 118.4855, "lat": 31.3194, "count": 80},
+            {"lng": 118.3577, "lat": 31.3350, "count": 18},
+            {"lng": 118.3660, "lat": 31.4167, "count": 58},
+            {"lng": 118.4178, "lat": 31.2585, "count": 76},
+            {"lng": 118.4928, "lat": 31.2910, "count": 94},
+            {"lng": 118.3691, "lat": 31.2873, "count": 10},
+            {"lng": 118.4493, "lat": 31.3761, "count": 92},
+            {"lng": 118.4373, "lat": 31.2614, "count": 18},
+            {"lng": 118.3819, "lat": 31.2773, "count": 63},
+            {"lng": 118.3597, "lat": 31.2883, "count": 47},
+            {"lng": 118.4023, "lat": 31.3771, "count": 68},
+            {"lng": 118.3741, "lat": 31.2862, "count": 95},
+            {"lng": 118.3671, "lat": 31.3962, "count": 18},
+            {"lng": 118.3815, "lat": 31.2868, "count": 71},
+            {"lng": 118.3402, "lat": 31.2969, "count": 8},
+            {"lng": 118.3795, "lat": 31.4129, "count": 96},
+            {"lng": 118.4564, "lat": 31.2837, "count": 26},
+            {"lng": 118.3879, "lat": 31.2942, "count": 76},
+            {"lng": 118.4419, "lat": 31.2927, "count": 96},
+            {"lng": 118.4123, "lat": 31.3385, "count": 64},
+            {"lng": 118.4633, "lat": 31.4144, "count": 66},
+            {"lng": 118.4944, "lat": 31.2859, "count": 36},
+            {"lng": 118.3852, "lat": 31.2935, "count": 72},
+            {"lng": 118.4376, "lat": 31.3895, "count": 99},
+            {"lng": 118.4791, "lat": 31.3023, "count": 53},
+            {"lng": 118.3808, "lat": 31.2627, "count": 64},
+            {"lng": 118.3484, "lat": 31.3002, "count": 35},
+            {"lng": 118.3942, "lat": 31.3936, "count": 29},
+            {"lng": 118.4630, "lat": 31.2656, "count": 47},
+            {"lng": 118.4499, "lat": 31.3432, "count": 40},
+            {"lng": 118.3842, "lat": 31.3007, "count": 80},
+            {"lng": 118.3640, "lat": 31.2765, "count": 24},
+            {"lng": 118.5024, "lat": 31.3166, "count": 5},
+            {"lng": 118.4573, "lat": 31.3146, "count": 26},
+            {"lng": 118.4074, "lat": 31.4125, "count": 8},
+            {"lng": 118.4989, "lat": 31.3340, "count": 36},
+            {"lng": 118.3628, "lat": 31.3443, "count": 38},
+            {"lng": 118.3466, "lat": 31.3308, "count": 98},
+            {"lng": 118.3628, "lat": 31.3174, "count": 26},
+            {"lng": 118.4968, "lat": 31.3971, "count": 74},
+            {"lng": 118.4607, "lat": 31.2588, "count": 52},
+            {"lng": 118.4026, "lat": 31.3496, "count": 24},
+            {"lng": 118.4417, "lat": 31.2515, "count": 36},
+            {"lng": 118.3665, "lat": 31.3022, "count": 32},
+            {"lng": 118.4216, "lat": 31.3059, "count": 28},
+            {"lng": 118.3873, "lat": 31.2622, "count": 97},
+            {"lng": 118.3496, "lat": 31.2882, "count": 91},
+            {"lng": 118.3831, "lat": 31.3702, "count": 50},
+            {"lng": 118.3790, "lat": 31.3611, "count": 70},
+            {"lng": 118.4323, "lat": 31.4177, "count": 93},
+            {"lng": 118.3563, "lat": 31.2666, "count": 16},
+            {"lng": 118.3404, "lat": 31.2655, "count": 72},
+            {"lng": 118.4955, "lat": 31.3256, "count": 6},
+            {"lng": 118.3870, "lat": 31.4171, "count": 50},
+            {"lng": 118.4468, "lat": 31.4124, "count": 91},
+            {"lng": 118.4338, "lat": 31.3671, "count": 9},
+            {"lng": 118.4101, "lat": 31.4009, "count": 18},
+            {"lng": 118.4254, "lat": 31.3536, "count": 4},
+            {"lng": 118.3568, "lat": 31.3812, "count": 33},
+            {"lng": 118.4741, "lat": 31.3521, "count": 45},
+            {"lng": 118.4742, "lat": 31.4189, "count": 10},
+            {"lng": 118.3634, "lat": 31.2833, "count": 97},
+            {"lng": 118.4037, "lat": 31.3151, "count": 54},
+            {"lng": 118.4902, "lat": 31.3203, "count": 99},
+            {"lng": 118.4051, "lat": 31.3331, "count": 35},
+            {"lng": 118.5006, "lat": 31.3674, "count": 59},
+            {"lng": 118.3828, "lat": 31.3826, "count": 27},
+            {"lng": 118.4396, "lat": 31.4110, "count": 32},
+            {"lng": 118.3434, "lat": 31.3907, "count": 67},
+            {"lng": 118.4558, "lat": 31.3153, "count": 26},
+            {"lng": 118.4680, "lat": 31.2956, "count": 80},
+            {"lng": 118.3977, "lat": 31.2813, "count": 46},
+            {"lng": 118.3460, "lat": 31.4159, "count": 28},
+            {"lng": 118.4276, "lat": 31.3440, "count": 72},
+            {"lng": 118.4107, "lat": 31.2973, "count": 24},
+            {"lng": 118.3502, "lat": 31.2559, "count": 44},
+            {"lng": 118.4226, "lat": 31.3141, "count": 64},
+            {"lng": 118.4983, "lat": 31.2831, "count": 42},
+            {"lng": 118.3713, "lat": 31.3279, "count": 24},
+            {"lng": 118.3585, "lat": 31.3806, "count": 11},
+            {"lng": 118.3654, "lat": 31.3980, "count": 12},
+            {"lng": 118.4437, "lat": 31.4015, "count": 26},
+            {"lng": 118.3718, "lat": 31.4205, "count": 15},
+            {"lng": 118.4537, "lat": 31.2819, "count": 20},
+            {"lng": 118.4975, "lat": 31.3825, "count": 84},
+            {"lng": 118.3455, "lat": 31.3593, "count": 66},
+            {"lng": 118.3958, "lat": 31.2949, "count": 84},
+            {"lng": 118.3623, "lat": 31.4023, "count": 83},
+            {"lng": 118.3544, "lat": 31.4043, "count": 78},
+            {"lng": 118.4614, "lat": 31.2859, "count": 59},
+            {"lng": 118.4260, "lat": 31.3396, "count": 33},
+            {"lng": 118.4625, "lat": 31.2820, "count": 92},
+            {"lng": 118.3472, "lat": 31.2837, "count": 74},
+            {"lng": 118.3745, "lat": 31.2618, "count": 89},
+            {"lng": 118.4764, "lat": 31.3355, "count": 2},
+            {"lng": 118.4195, "lat": 31.2544, "count": 24},
+            {"lng": 118.4681, "lat": 31.3758, "count": 89},
+            {"lng": 118.3953, "lat": 31.2765, "count": 45},
+            {"lng": 118.4078, "lat": 31.3776, "count": 28},
+            {"lng": 118.5003, "lat": 31.3092, "count": 39},
+            {"lng": 118.3452, "lat": 31.2546, "count": 64},
+            {"lng": 118.3797, "lat": 31.2637, "count": 73},
+            {"lng": 118.3516, "lat": 31.3829, "count": 71},
+            {"lng": 118.4225, "lat": 31.3855, "count": 60},
+            {"lng": 118.4240, "lat": 31.2706, "count": 67},
+            {"lng": 118.4510, "lat": 31.3316, "count": 18},
+            {"lng": 118.4957, "lat": 31.2612, "count": 74},
+            {"lng": 118.4934, "lat": 31.2590, "count": 13},
+            {"lng": 118.4207, "lat": 31.3698, "count": 34},
+            {"lng": 118.4263, "lat": 31.4096, "count": 60},
+            {"lng": 118.3526, "lat": 31.3576, "count": 10}
+
+        ];
+        if (!isSupportCanvas()) {
+            alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~')
+        }
+        //详细的参数,可以查看heatmap.js的文档 https://github.com/pa7/heatmap.js/blob/master/README.md
+        //参数说明如下:
+        /* visible 热力图是否显示,默认为true
+         * opacity 热力的透明度,1-100
+         * radius 势力图的每个点的半径大小
+         * gradient  {JSON} 热力图的渐变区间 . gradient如下所示
+         *	{
+                .2:'rgb(0, 255, 255)',
+                .5:'rgb(0, 110, 255)',
+                .8:'rgb(100, 0, 255)'
+            }
+            其中 key 表示插值的位置, 0~1.
+                value 为颜色值.
+         */
+        heatmapOverlay = new BMapLib.HeatmapOverlay({"radius": 20});
+        map.addOverlay(heatmapOverlay);
+        heatmapOverlay.setDataSet({data: points, max: 100});
+        //是否显示热力图
+        // function openHeatmap(){
+        //     heatmapOverlay.show();
+        // }
+        // function closeHeatmap(){
+        //     heatmapOverlay.hide();
+        // }
+        // closeHeatmap();
+        function setGradient() {
+            /*格式如下所示:
+           {
+                 0:'rgb(102, 255, 0)',
+                 .5:'rgb(255, 170, 0)',
+                 1:'rgb(255, 0, 0)'
+           }*/
+            var gradient = {};
+            var colors = document.querySelectorAll("input[type='color']");
+            colors = [].slice.call(colors, 0);
+            colors.forEach(function (ele) {
+                gradient[ele.getAttribute("data-key")] = ele.value;
+            });
+            heatmapOverlay.setOptions({"gradient": gradient});
+        }
+
+        //判断浏览区是否支持canvas
+        function isSupportCanvas() {
+            var elem = document.createElement('canvas');
+            return !!(elem.getContext && elem.getContext('2d'));
+        }
+    }
+
+</script>
+<!--显示交通拥堵情况-->
+<script type="text/javascript">
+    document.getElementById("btn7").onclick=function () {
+        var myChart = echarts.init(document.getElementById('main'));
+        $.get('data/test.json', function (data) {
+
+            var points = [].concat.apply([], data.map(function (track) {
+                return track.map(function (seg) {
+                    return seg.coord.concat([1]);
+                });
+            }));
+            myChart.setOption(option = {
+                animation: false,
+                bmap: {
+                    center: [118.420627,31.337951],
+                    zoom: 14,
+                    roam: true
+                },
+                visualMap: {
+                    show: false,
+                    top: 'top',
+                    min: 0,
+                    max: 5,
+                    seriesIndex: 0,
+                    calculable: true,
+                    inRange: {
+                        color: ['blue', 'blue', 'green', 'yellow', 'red']
+                    }
+                },
+                series: [{
+                    type: 'heatmap',
+                    coordinateSystem: 'bmap',
+                    data: points,
+                    pointSize: 5,
+                    blurSize: 6
+                }]
+            });
+
+            // 添加百度地图插件
+            var bmap = myChart.getModel().getComponent('bmap').getBMap();
+            bmap.addControl(new BMap.MapTypeControl());
+
+        });
+
+    }
+
+</script>
+
+<script src="//webapi.amap.com/loca?v=1.2.0&key=5d618dc0cf638896d006fbc5f9d7f7ce"></script>
+<script src="//a.amap.com/Loca/static/dist/jquery.min.js"></script>
+<script type="text/javascript">
+    document.getElementById("btn8").onclick=function(){
+
+        var map = Loca.create('container', {
+            pitch: 60,
+            center: [118.3697, 31.3740],
+            zoom: 13,
+            features: ['bg', 'road']
+        });
+
+        var layer = Loca.visualLayer({
+            container: map,
+            eventSupport: true,
+            type: 'heatmap',
+            shape: 'hexagon'  // 蜂窝六边形
+        });
+        map.on('mapload', function () {
+            map.getMap().plugin(['AMap.ControlBar'], function () {
+                var controlBar = new AMap.ControlBar({
+                    showZoomBar:false,
+                    showControlButton:true,
+                    position:{
+                        left:'0px',
+                        top:'60px'
+                    }
+                });
+                map.getMap().addControl(controlBar);
+            });
+        });
+
+        $.get('data/jt.json', function (data) {
+            layer.setData(data, {
+                lnglat: 'lnglat',
+                value: 'cnt',
+                type: 'json'
+            });
+
+            layer.setOptions({
+                unit: 'meter',
+                heightUnit: 'meter',
+                style: {
+                    color: [
+                        '#2c7bb6',
+                        '#abd9e9',
+                        '#ffffbf',
+                        '#fdae61',
+                        '#d7191c'
+                    ],
+                    height: [0, 500],
+                    radius: 15,
+                    gap: 2,
+                    opacity: 0.85,
+                },
+                selectStyle: {
+                    color: '#dbf21d',
+                    opacity: 0.9
+                }
+            });
+
+            layer.render();
+        });
+
+        layer.on('legendupdate', function (ev) {
+            var colorLegend = ev.colorLegend;
+            initLegend(colorLegend);
+        });
+
+        layer.on('mousemove', function (ev) {
+            updateInfo(ev);
+        });
+
+        function initLegend(colorLegend) {
+            var legends = colorLegend.map(function (item) {
+                return `<li class="color-item" style="background-color: ${item.color}"></li>`
+            });
+
+            var ranges = colorLegend.map((item, index) => {
+                // range 可能为小数，可以自行取整计算
+                item.range[0] = Math.round(item.range[0]);
+                item.range[1] = Math.round(item.range[1]);
+
+                if (index == colorLegend.length - 1) {
+                    return `<li class="label-item">${item.range[0]}</li><li class="label-item">${item.range[1]}</li>`;
+                }
+                return `<li class="label-item">${item.range[0]}</li>`;
+            });
+
+            document.getElementById('legend-color').innerHTML = legends.join('');
+            document.getElementById('legend-label').innerHTML = ranges.join('');
+            document.getElementById("info1").style.display="block";
+            document.getElementById("chel").style.display="block";
+        }
+
+        function updateInfo(ev) {
+            var $val = document.getElementById('val');
+            var $lngLat = document.getElementById('lng-lat');
+
+            $val.innerText = ev.value;
+            $lngLat.innerText = ev.lngLat.valueOf();
+        }
+    }
+
+</script>
+
+
+
+</body>
+
+<!--引入百度地图的jssdk，这里需要使用你在百度地图开发者平台申请的 ak-->
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=4XMF4mlCeqtT05OwGEnfGd6E6XGrITTA"></script>
+
+
+<script src="js/vendor/Heatmap_min.js"></script>
+<!-- 引入 ECharts -->
+<script src="js/vendor/echarts.min.js"></script>
+<!-- 引入百度地图扩展 -->
+<script src="js/vendor/bmap.js"></script>
+<!-- 引入jQuery -->
+<script src="js/vendor/jquery-3.3.1.min.js"></script>
+
+<!-- <script src="js/points.js"></script> -->
+<script src="js/main.js"></script>
+
+
+<script>
+    //根据id 获取按钮，注册点击事件  添加事件处理函数
+    document.getElementById("bt").onclick = function () {
+        //判断当前点击按钮的value值
+        if (this.value == "隐藏") {
+            document.getElementById("dv").style.display = "none";
+            this.value = "显示";
+        } else if (this.value == "显示") {
+            document.getElementById("dv").style.display = "block";
+            this.value = "隐藏";
+        }
+    };
+</script>
+
+<script>
+    //根据id 获取按钮，注册点击事件  添加事件处理函数
+    document.getElementById("chel").onclick = function () {
+        //判断当前点击按钮的value值
+        if (this.value == "车流量") {
+            document.getElementById("cheliul").style.display = "block";
+            this.value = "隐藏";
+        } else if (this.value == "隐藏") {
+            document.getElementById("cheliul").style.display = "none";
+            this.value = "车流量";
+        }
+    };
+</script>
+
+</html>
+
+<!--5d618dc0cf638896d006fbc5f9d7f7ce-->
+
+

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>热力实战 - 玉渊潭周边定位分布</title>
+    <meta name="description" content="北京玉渊潭周边1万7千条定位数据的热力分布情况，颜色和高度表示定位聚合后的情况。同时配有图例说明。">
+    <link rel="stylesheet" href="//a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+    <style>
+        html, body, #container {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+        }
+
+        /* 图例样式 */
+        .legend {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .legend ul {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .color-item {
+            width: 60px;
+            height: 20px;
+            display: inline-block;
+        }
+
+        .label-item {
+            display: inline-block;
+            width: 60px;
+            margin-left: -2px;
+            font-size: 14px;
+        }
+
+        /* 信息浮框 */
+        .info span {
+            min-width: 150px;
+            max-width: 300px;
+            color: #1b91ff;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+<div id="container"></div>
+<div class="legend">
+    <ul class="colors" id="legend-color"></ul>
+    <ul class="labels" id="legend-label"></ul>
+</div>
+<div class="info" style="width: 300px;">
+    <h4>热力数据</h4>
+    <p>当前热力值：<span id="val">--</span></p>
+    <p>热力中心点坐标：
+        <span id="lng-lat">--</span>
+    </p>
+</div>
+<script src="//webapi.amap.com/loca?v=1.2.0&key=5d618dc0cf638896d006fbc5f9d7f7ce"></script>
+<script src="//a.amap.com/Loca/static/dist/jquery.min.js"></script>
+<script>
+
+    var map = Loca.create('container', {
+        pitch: 60,
+        center: [118.3697, 31.3740],
+        zoom: 13,
+        features: ['bg', 'road']
+    });
+
+    var layer = Loca.visualLayer({
+        container: map,
+        eventSupport: true,
+        type: 'heatmap',
+        shape: 'hexagon'  // 蜂窝六边形
+    });
+    map.on('mapload', function () {
+        map.getMap().plugin(['AMap.ControlBar'], function () {
+            var controlBar = new AMap.ControlBar({
+                showZoomBar:false,
+                showControlButton:true,
+                position:{
+                    left:'0px',
+                    top:'60px'
+                }
+            });
+            map.getMap().addControl(controlBar);
+        });
+    });
+
+    $.get('data/jt.json', function (data) {
+        layer.setData(data, {
+            lnglat: 'lnglat',
+            value: 'cnt',
+            type: 'json'
+        });
+
+        layer.setOptions({
+            unit: 'meter',
+            heightUnit: 'meter',
+            style: {
+                color: [
+                    '#2c7bb6',
+                    '#abd9e9',
+                    '#ffffbf',
+                    '#fdae61',
+                    '#d7191c'
+                ],
+                height: [0, 500],
+                radius: 15,
+                gap: 2,
+                opacity: 0.85,
+            },
+            selectStyle: {
+                color: '#dbf21d',
+                opacity: 0.9
+            }
+        });
+
+        layer.render();
+    });
+
+    layer.on('legendupdate', function (ev) {
+        var colorLegend = ev.colorLegend;
+        initLegend(colorLegend);
+    });
+
+    layer.on('mousemove', function (ev) {
+        updateInfo(ev);
+    });
+
+    function initLegend(colorLegend) {
+        var legends = colorLegend.map(function (item) {
+            return `<li class="color-item" style="background-color: ${item.color}"></li>`
+        });
+
+        var ranges = colorLegend.map((item, index) => {
+            // range 可能为小数，可以自行取整计算
+            item.range[0] = Math.round(item.range[0]);
+            item.range[1] = Math.round(item.range[1]);
+
+            if (index == colorLegend.length - 1) {
+                return `<li class="label-item">${item.range[0]}</li><li class="label-item">${item.range[1]}</li>`;
+            }
+            return `<li class="label-item">${item.range[0]}</li>`;
+        });
+
+        document.getElementById('legend-color').innerHTML = legends.join('');
+        document.getElementById('legend-label').innerHTML = ranges.join('');
+    }
+
+    function updateInfo(ev) {
+        var $val = document.getElementById('val');
+        var $lngLat = document.getElementById('lng-lat');
+
+        $val.innerText = ev.value;
+        $lngLat.innerText = ev.lngLat.valueOf();
+    }
+</script>
+</body>
+</html>
+
+<!--&lt;!&ndash;获取点的坐标&ndash;&gt;-->
+<!--<!doctype html>-->
+<!--<html>-->
+<!--<head>-->
+    <!--<meta charset="utf-8">-->
+    <!--<meta http-equiv="X-UA-Compatible" content="IE=edge">-->
+    <!--<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">-->
+    <!--<title>鼠标拾取地图坐标</title>-->
+    <!--<link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css"/>-->
+    <!--<script type="text/javascript"-->
+            <!--src="http://webapi.amap.com/maps?v=1.3&key=5d618dc0cf638896d006fbc5f9d7f7ce&plugin=AMap.Autocomplete"></script>-->
+    <!--<script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div id="container"></div>-->
+<!--<div id="myPageTop">-->
+    <!--<table>-->
+        <!--<tr>-->
+
+            <!--<td class="column2">-->
+                <!--<label>左击获取经纬度：</label>-->
+            <!--</td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+
+            <!--<td class="column2">-->
+                <!--<input type="text" readonly="true" id="lnglat">-->
+            <!--</td>-->
+        <!--</tr>-->
+    <!--</table>-->
+<!--</div>-->
+<!--<script type="text/javascript">-->
+    <!--var map = new AMap.Map("container", {-->
+        <!--resizeEnable: true-->
+    <!--});-->
+    <!--//为地图注册click事件获取鼠标点击出的经纬度坐标-->
+    <!--var clickEventListener = map.on('click', function(e) {-->
+        <!--document.getElementById("lnglat").value = e.lnglat.getLng() + ',' + e.lnglat.getLat()-->
+        <!--var v = document.getElementById("lnglat").value;-->
+        <!--console.log("{\"lnglat\":["+v+"],\"cnt\":1},");-->
+    <!--});-->
+
+    <!--var auto = new AMap.Autocomplete({-->
+        <!--input: "tipinput"-->
+    <!--});-->
+    <!--AMap.event.addListener(auto, "select", select);//注册监听，当选中某条记录时会触发-->
+    <!--function select(e) {-->
+        <!--if (e.poi && e.poi.location) {-->
+            <!--map.setZoom(15);-->
+            <!--map.setCenter(e.poi.location);-->
+        <!--}-->
+    <!--}-->
+
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->

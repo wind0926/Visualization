@@ -1,0 +1,16 @@
+IDE：
+--------------------
+vs code / npm / http-server
+
+--------------------
+目标：产生贴近道路的数据
+
+1、百度地图API，检索出芜湖市若干条公交新路的路经站点的经纬度坐标，
+2、在页面加一点互动功能：增加一辆车、可以选路线；批量增加N辆车
+3、。。。。。。。。。。
+4、把地图的主题改成亮一点的颜色，否则演示时PPT看不清
+
+参考资料
+1、百度地图API：http://lbsyun.baidu.com/jsdemo.htm#d0_1
+2、eCharts：https://echarts.baidu.com/examples/editor.html?c=lines-bmap-effect
+           https://www.echartsjs.com/api.html#echarts
